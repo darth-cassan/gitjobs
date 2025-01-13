@@ -1,0 +1,13 @@
+{
+    "custom_blocks": "when",
+    "format_attribute_template_tags": true,
+    "format_js": true,
+    "ignore": "J004,J018",
+    "ignore_blocks": "call,when",
+    "indent": 2,
+    "js": {
+        "indent_size": 2
+    },
+    "max_blank_lines": 1,
+    "max_line_length": "110"
+}

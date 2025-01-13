@@ -1,0 +1,54 @@
+[workspace]
+resolver = "2"
+members = [
+    "ojb-server"
+]
+
+[workspace.package]
+version = "0.0.1"
+license = "Apache-2.0"
+edition = "2021"
+rust-version = "1.84"
+
+[workspace.dependencies]
+anyhow = "1.0.95"
+async-trait = "0.1.85"
+axum = { version = "0.8.1", features = ["macros"] }
+cached = { version = "0.54.0", features = ["async"] }
+clap = { version = "4.5.26", features = ["derive"] }
+chrono = { version = "0.4.39", features = ["serde"] }
+chrono-tz = { version = "0.10.0", features = ["serde"] }
+deadpool-postgres = { version = "0.14.1", features = ["serde"] }
+emojis = "0.6.4"
+figment = { version = "0.10.19", features = ["yaml", "env"] }
+mime_guess = "2.0.5"
+minify-html = "0.15.0"
+num-format = "0.4.4"
+openssl = { version = "0.10.68", features = ["vendored"] }
+palette = "0.7.6"
+postgres-openssl = "0.5.0"
+rinja = { git = "https://github.com/rinja-rs/rinja", rev = "be9069f", features = ["serde_json"] }
+rust-embed = "8.5.0"
+serde = { version = "1.0.217", features = ["derive"] }
+serde_html_form = "0.2.7"
+serde_json = "1.0.135"
+serde_qs = "0.13.0"
+tokio = { version = "1.43.0", features = [
+    "macros",
+    "process",
+    "rt-multi-thread",
+    "signal",
+    "sync",
+    "time",
+] }
+tokio-postgres = { version = "0.7.12", features = [
+    "with-uuid-1",
+    "with-serde_json-1",
+    "with-time-0_3",
+] }
+tower = "0.5.2"
+tower-http = { version = "0.6.2", features = ["auth", "fs", "set-header", "trace"] }
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter", "json"] }
+unicode-segmentation = "1.12.0"
+uuid = { version = "1.11.1", features = ["serde", "v4"] }
