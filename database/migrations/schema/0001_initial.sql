@@ -1,9 +1,11 @@
 create extension pgcrypto;
+create extension postgis;
 
 create table board (
     board_id uuid primary key default gen_random_uuid(),
-    active boolean default true not null,
-    created_at timestamptz default current_timestamp not null,
+
+    active boolean not null default true,
+    created_at timestamptz not null default current_timestamp,
     description text not null check (description <> ''),
     display_name text not null unique check (display_name <> ''),
     header_logo_url text not null check (header_logo_url <> ''),
@@ -15,3 +17,134 @@ create table board (
     extra_links jsonb,
     footer_logo_url text check (footer_logo_url <> '')
 );
+
+create table location (
+    location_id int primary key,
+
+    city text not null check (city <> ''),
+    country text not null check (country <> ''),
+
+    coordinates geography(point, 4326),
+    state text check (state <> '')
+);
+
+create index location_city_idx on location (city);
+create index location_coordinates_idx on location using gist (coordinates);
+create index location_country_idx on location (country);
+
+create table profile (
+    profile_id uuid primary key default gen_random_uuid(),
+    board_id uuid  not null references board (board_id),
+    location_id int references location (location_id),
+
+    email text not null unique check (email <> ''),
+    first_name text not null check (first_name <> ''),
+    last_name text not null check (last_name <> ''),
+    public boolean not null default false,
+    summary text not null check (summary <> ''),
+
+    facebook_url text check (facebook_url <> ''),
+    github_url text check (github_url <> ''),
+    linkedin_url text check (linkedin_url <> ''),
+    phone text check (phone <> ''),
+    photo_url text check (photo_url <> ''),
+    resume_blob bytea,
+    resume_filename text check (resume_filename <> ''),
+    skills text[],
+    twitter_url text check (twitter_url <> ''),
+    website_url text check (website_url <> '')
+);
+
+create index profile_board_id_idx on profile (board_id);
+create index profile_location_id_idx on profile (location_id);
+
+create table employer_tier (
+    employer_tier_id uuid primary key default gen_random_uuid(),
+    board_id uuid not null references board (board_id),
+
+    name text not null unique check (name <> ''),
+    highlight boolean not null default false,
+    priority int not null default 0
+);
+
+create index tier_board_id_idx on employer_tier (board_id);
+
+create table employer (
+    employer_id uuid primary key default gen_random_uuid(),
+    employer_tier_id uuid not null references employer_tier (employer_tier_id),
+    location_id int references location (location_id),
+
+    company text not null check (company <> ''),
+    created_at timestamptz not null default current_timestamp,
+    description text not null check (description <> ''),
+    public boolean not null default false,
+
+    logo_url text check (logo_url <> ''),
+    updated_at timestamptz,
+    website_url text check (website_url <> '')
+);
+
+create index employer_employer_tier_id_idx on employer (employer_tier_id);
+create index employer_location_id_idx on employer (location_id);
+
+create table job_type (
+    job_type_id int primary key,
+    name text not null unique check (name <> '')
+);
+
+insert into job_type values (1, 'Full Time');
+insert into job_type values (2, 'Part Time');
+
+create table workplace (
+    workplace_id int primary key,
+    name text not null unique check (name <> '')
+);
+
+insert into workplace values (1, 'Hybrid');
+insert into workplace values (2, 'On Site');
+insert into workplace values (3, 'Remote');
+
+create table job (
+    job_id uuid primary key default gen_random_uuid(),
+    employer_id uuid not null references employer (employer_id),
+    job_type_id int not null references job_type (job_type_id),
+    workplace_id int not null references workplace (workplace_id),
+    location_id int references location (location_id),
+
+    created_at timestamptz not null default current_timestamp,
+    title text not null check (title <> ''),
+    description text not null check (description <> ''),
+
+    apply_url text check (apply_url <> ''),
+    expires_at timestamptz,
+    keywords text[],
+    location geography(point, 4326),
+    open_source int check (open_source >= 0 and open_source <= 100),
+    published_at timestamptz,
+    salary bigint check (salary >= 0),
+    salary_currency text check (salary_currency <> ''),
+    salary_max bigint check (salary_max >= 0),
+    salary_min bigint check (salary_min >= 0),
+    salary_timeframe text check (salary_timeframe <> ''),
+    updated_at timestamptz,
+    upstream_commitment int check (upstream_commitment >= 0 and upstream_commitment <= 100)
+);
+
+create index job_employer_id_idx on job (employer_id);
+create index job_job_type_id_idx on job (job_type_id);
+create index job_workplace_id_idx on job (workplace_id);
+create index job_location_id_idx on job (location_id);
+
+create table applicant (
+    applicant_id uuid primary key default gen_random_uuid(),
+    profile_id uuid not null references profile (profile_id),
+    job_id uuid not null references job (job_id),
+
+    cover_letter text not null check (cover_letter <> ''),
+    created_at timestamptz not null default current_timestamp,
+
+    updated_at timestamptz
+);
+
+create index applicant_profile_id_idx on applicant (profile_id);
+create index applicant_job_id_idx on applicant (job_id);
