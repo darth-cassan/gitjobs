@@ -14,12 +14,13 @@ create table board (
     theme jsonb not null,
     title text not null check (title <> ''),
 
+    about_intro text check (about_intro <> ''),
     extra_links jsonb,
     footer_logo_url text check (footer_logo_url <> '')
 );
 
 create table location (
-    location_id int primary key,
+    location_id uuid primary key,
 
     city text not null check (city <> ''),
     country text not null check (country <> ''),
@@ -35,7 +36,7 @@ create index location_country_idx on location (country);
 create table profile (
     profile_id uuid primary key default gen_random_uuid(),
     board_id uuid  not null references board (board_id),
-    location_id int references location (location_id),
+    location_id uuid references location (location_id),
 
     email text not null unique check (email <> ''),
     first_name text not null check (first_name <> ''),
@@ -46,9 +47,10 @@ create table profile (
     facebook_url text check (facebook_url <> ''),
     github_url text check (github_url <> ''),
     linkedin_url text check (linkedin_url <> ''),
+    open_to_relocation boolean,
+    open_to_remote boolean,
     phone text check (phone <> ''),
     photo_url text check (photo_url <> ''),
-    remote boolean,
     resume_blob bytea,
     resume_filename text check (resume_filename <> ''),
     skills text[],
@@ -126,7 +128,7 @@ create index tier_board_id_idx on employer_tier (board_id);
 create table employer (
     employer_id uuid primary key default gen_random_uuid(),
     employer_tier_id uuid not null references employer_tier (employer_tier_id),
-    location_id int references location (location_id),
+    location_id uuid references location (location_id),
 
     company text not null check (company <> ''),
     created_at timestamptz not null default current_timestamp,
@@ -142,36 +144,39 @@ create index employer_employer_tier_id_idx on employer (employer_tier_id);
 create index employer_location_id_idx on employer (location_id);
 
 create table job_type (
-    job_type_id int primary key,
+    job_type_id uuid primary key default gen_random_uuid(),
     name text not null unique check (name <> '')
 );
 
-insert into job_type values (1, 'Full Time');
-insert into job_type values (2, 'Part Time');
+insert into job_type (name) values ('Full Time');
+insert into job_type (name) values ('Part Time');
+insert into job_type (name) values ('Contractor');
+insert into job_type (name) values ('Internship');
 
 create table workplace (
-    workplace_id int primary key,
+    workplace_id uuid primary key default gen_random_uuid(),
     name text not null unique check (name <> '')
 );
 
-insert into workplace values (1, 'Hybrid');
-insert into workplace values (2, 'On Site');
-insert into workplace values (3, 'Remote');
+insert into workplace (name) values ('Hybrid');
+insert into workplace (name) values ('On Site');
+insert into workplace (name) values ('Remote');
 
 create table job (
     job_id uuid primary key default gen_random_uuid(),
     employer_id uuid not null references employer (employer_id),
-    job_type_id int not null references job_type (job_type_id),
-    workplace_id int not null references workplace (workplace_id),
-    location_id int references location (location_id),
+    job_type_id uuid not null references job_type (job_type_id),
+    workplace_id uuid not null references workplace (workplace_id),
+    location_id uuid references location (location_id),
 
     created_at timestamptz not null default current_timestamp,
     title text not null check (title <> ''),
     description text not null check (description <> ''),
 
     apply_url text check (apply_url <> ''),
+    apply_instructions text check (apply_instructions <> ''),
+    benefits text[],
     expires_at timestamptz,
-    keywords text[],
     location geography(point, 4326),
     open_source int check (open_source >= 0 and open_source <= 100),
     published_at timestamptz,
@@ -180,6 +185,7 @@ create table job (
     salary_max bigint check (salary_max >= 0),
     salary_min bigint check (salary_min >= 0),
     salary_timeframe text check (salary_timeframe <> ''),
+    skills text[],
     updated_at timestamptz,
     upstream_commitment int check (upstream_commitment >= 0 and upstream_commitment <= 100)
 );
@@ -202,3 +208,13 @@ create table applicant (
 
 create index applicant_profile_id_idx on applicant (profile_id);
 create index applicant_job_id_idx on applicant (job_id);
+
+create table faq (
+    faq_id uuid primary key default gen_random_uuid(),
+    board_id uuid not null references board (board_id),
+
+    answer text not null check (answer <> ''),
+    question text not null check (question <> '')
+);
+
+create index faq_board_id_idx on faq (board_id);
