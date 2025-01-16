@@ -48,12 +48,66 @@ create table profile (
     linkedin_url text check (linkedin_url <> ''),
     phone text check (phone <> ''),
     photo_url text check (photo_url <> ''),
+    remote boolean,
     resume_blob bytea,
     resume_filename text check (resume_filename <> ''),
     skills text[],
     twitter_url text check (twitter_url <> ''),
     website_url text check (website_url <> '')
 );
+
+create table profile_certification (
+    profile_certification_id uuid primary key default gen_random_uuid(),
+    profile_id uuid not null references profile (profile_id),
+
+    description text not null check (description <> ''),
+    end_date date not null,
+    provider text not null check (provider <> ''),
+    start_date date not null,
+    title text not null check (title <> '')
+);
+
+create index profile_certification_profile_id_idx on profile_certification (profile_id);
+
+create table profile_education (
+    profile_education_id uuid primary key default gen_random_uuid(),
+    profile_id uuid not null references profile (profile_id),
+
+    description text not null check (description <> ''),
+    educational_institution text not null check (educational_institution <> ''),
+    end_date date not null,
+    start_date date not null,
+    title text not null check (title <> '')
+);
+
+create index profile_education_profile_id_idx on profile_education (profile_id);
+
+create table profile_employment (
+    profile_employment_id uuid primary key default gen_random_uuid(),
+    profile_id uuid not null references profile (profile_id),
+
+    company text not null check (company <> ''),
+    current boolean not null default false,
+    description text not null check (description <> ''),
+    end_date date not null,
+    start_date date not null,
+    title text not null check (title <> '')
+);
+
+create index profile_employment_profile_id_idx on profile_employment (profile_id);
+
+create table profile_project (
+    profile_project_id uuid primary key default gen_random_uuid(),
+    profile_id uuid not null references profile (profile_id),
+
+    description text not null check (description <> ''),
+    title text not null check (title <> ''),
+    url text not null check (url <> ''),
+
+    source_url text check (source_url <> '')
+);
+
+create index profile_project_profile_id_idx on profile_project (profile_id);
 
 create index profile_board_id_idx on profile (board_id);
 create index profile_location_id_idx on profile (location_id);
