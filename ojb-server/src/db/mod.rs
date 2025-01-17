@@ -3,15 +3,17 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use dashboard::DBDashBoard;
 use deadpool_postgres::Pool;
 use jobboard::DBJobBoard;
 
+mod dashboard;
 mod jobboard;
 
 /// Abstraction layer over the database. Trait that defines some operations a
 /// DB implementation must support.
 #[async_trait]
-pub(crate) trait DB: DBJobBoard {}
+pub(crate) trait DB: DBJobBoard + DBDashBoard {}
 
 /// Type alias to represent a DB trait object.
 pub(crate) type DynDB = Arc<dyn DB + Send + Sync>;

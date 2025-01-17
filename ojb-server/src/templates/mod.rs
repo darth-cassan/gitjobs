@@ -1,4 +1,5 @@
 //! This module defines the templates used to render the different parts of the
-//! sites.
+//! job boards sites.
 
+pub(crate) mod dashboard;
 pub(crate) mod jobboard;

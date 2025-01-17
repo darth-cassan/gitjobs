@@ -42,7 +42,8 @@ pub(crate) struct State {
 pub(crate) fn setup(cfg: &HttpServerConfig, db: DynDB) -> Router {
     // Setup router
     let mut router = Router::new()
-        .route("/", get(jobboard::jobs::index))
+        .route("/", get(jobboard::jobs::page))
+        .route("/about", get(jobboard::about::page))
         .route("/health-check", get(health_check))
         .route("/static/{*file}", get(static_handler))
         .layer(SetResponseHeaderLayer::if_not_present(

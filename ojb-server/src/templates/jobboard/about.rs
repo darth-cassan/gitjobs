@@ -3,7 +3,7 @@
 use rinja::Template;
 use serde::{Deserialize, Serialize};
 
-/// Index page template.
+/// About page template.
 #[derive(Debug, Clone, Template, Serialize, Deserialize)]
-#[template(path = "jobboard/about/index.html")]
-pub(crate) struct Index {}
+#[template(path = "jobboard/about/page.html")]
+pub(crate) struct Page {}

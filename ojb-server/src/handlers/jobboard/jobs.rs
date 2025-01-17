@@ -1,11 +1,8 @@
 //! This module defines the HTTP handlers for the jobs page.
 
-use std::collections::HashMap;
-
 use anyhow::Result;
 use axum::{
-    extract::{Query, RawQuery, State},
-    http::{HeaderMap, Uri},
+    extract::State,
     response::{Html, IntoResponse},
 };
 use rinja::Template;
@@ -14,20 +11,16 @@ use tracing::{debug, instrument};
 use crate::{
     db::DynDB,
     handlers::{error::HandlerError, extractors::JobBoardId},
-    templates::jobboard::jobs::Index,
+    templates::jobboard::jobs::Page,
 };
 
-/// Handler that returns the index page.
+/// Handler that returns the jobs page.
 #[instrument(skip_all, err)]
-pub(crate) async fn index(
+pub(crate) async fn page(
     State(_db): State<DynDB>,
-    JobBoardId(board_id): JobBoardId,
-    Query(_query): Query<HashMap<String, String>>,
-    RawQuery(_raw_query): RawQuery,
-    _headers: HeaderMap,
-    _uri: Uri,
+    JobBoardId(job_board_id): JobBoardId,
 ) -> Result<impl IntoResponse, HandlerError> {
-    debug!("board_id: {}", board_id);
+    debug!("job_board_id: {}", job_board_id);
 
-    Ok(Html(Index {}.render()?))
+    Ok(Html(Page {}.render()?))
 }

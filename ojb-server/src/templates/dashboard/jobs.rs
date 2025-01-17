@@ -5,5 +5,5 @@ use serde::{Deserialize, Serialize};
 
 /// Jobs page template.
 #[derive(Debug, Clone, Template, Serialize, Deserialize)]
-#[template(path = "jobboard/jobs/page.html")]
+#[template(path = "dashboard/jobs/page.html")]
 pub(crate) struct Page {}

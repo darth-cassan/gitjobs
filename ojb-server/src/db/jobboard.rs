@@ -1,4 +1,4 @@
-//! This module defines some database functionality used in the job board site.
+//! This module defines some database functionality for the job board site.
 
 use anyhow::Result;
 use async_trait::async_trait;
