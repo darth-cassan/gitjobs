@@ -1,5 +1,4 @@
-//! This module defines the HTTP handlers for the explore page of the board
-//! site.
+//! This module defines the HTTP handlers for the jobs page.
 
 use std::collections::HashMap;
 
@@ -14,15 +13,15 @@ use tracing::{debug, instrument};
 
 use crate::{
     db::DynDB,
-    handlers::{error::HandlerError, extractors::BoardId},
-    templates::board::explore::Index,
+    handlers::{error::HandlerError, extractors::JobBoardId},
+    templates::jobboard::jobs::Index,
 };
 
-/// Handler that returns the explore index page.
+/// Handler that returns the index page.
 #[instrument(skip_all, err)]
 pub(crate) async fn index(
     State(_db): State<DynDB>,
-    BoardId(board_id): BoardId,
+    JobBoardId(board_id): JobBoardId,
     Query(_query): Query<HashMap<String, String>>,
     RawQuery(_raw_query): RawQuery,
     _headers: HeaderMap,

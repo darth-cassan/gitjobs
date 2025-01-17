@@ -11,10 +11,10 @@ use uuid::Uuid;
 
 use crate::{db::DynDB, router};
 
-/// Custom extractor to get the board id from the request's host header.
-pub(crate) struct BoardId(pub Uuid);
+/// Custom extractor to get the job board id from the request's host header.
+pub(crate) struct JobBoardId(pub Uuid);
 
-impl FromRequestParts<router::State> for BoardId {
+impl FromRequestParts<router::State> for JobBoardId {
     type Rejection = (StatusCode, &'static str);
 
     #[instrument(skip_all, err(Debug))]
@@ -30,20 +30,20 @@ impl FromRequestParts<router::State> for BoardId {
             .next()
             .unwrap_or_default();
 
-        // Lookup the board id in the database
-        let Some(board_id) = lookup_board_id(state.db.clone(), host).await.map_err(|err| {
-            error!(?err, "error looking up board id");
+        // Lookup the job board id in the database
+        let Some(job_board_id) = lookup_job_board_id(state.db.clone(), host).await.map_err(|err| {
+            error!(?err, "error looking up job board id");
             (StatusCode::INTERNAL_SERVER_ERROR, "")
         })?
         else {
-            return Err((StatusCode::BAD_REQUEST, "board host not found"));
+            return Err((StatusCode::BAD_REQUEST, "job board host not found"));
         };
 
-        Ok(BoardId(board_id))
+        Ok(JobBoardId(job_board_id))
     }
 }
 
-/// Lookup the board id in the database using the host provided.
+/// Lookup the job board id in the database using the host provided.
 #[cached(
     time = 86400,
     key = "String",
@@ -52,9 +52,9 @@ impl FromRequestParts<router::State> for BoardId {
     result = true
 )]
 #[instrument(skip(db), err)]
-async fn lookup_board_id(db: DynDB, host: &str) -> Result<Option<Uuid>> {
+async fn lookup_job_board_id(db: DynDB, host: &str) -> Result<Option<Uuid>> {
     if host.is_empty() {
         return Ok(None);
     }
-    db.get_board_id(host).await
+    db.get_job_board_id(host).await
 }

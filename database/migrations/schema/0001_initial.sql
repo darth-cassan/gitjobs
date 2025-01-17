@@ -1,8 +1,8 @@
 create extension pgcrypto;
 create extension postgis;
 
-create table board (
-    board_id uuid primary key default gen_random_uuid(),
+create table job_board (
+    job_board_id uuid primary key default gen_random_uuid(),
 
     active boolean not null default true,
     created_at timestamptz not null default current_timestamp,
@@ -35,7 +35,7 @@ create index location_country_idx on location (country);
 
 create table profile (
     profile_id uuid primary key default gen_random_uuid(),
-    board_id uuid  not null references board (board_id),
+    job_board_id uuid  not null references job_board (job_board_id),
     location_id uuid references location (location_id),
 
     email text not null unique check (email <> ''),
@@ -57,6 +57,9 @@ create table profile (
     twitter_url text check (twitter_url <> ''),
     website_url text check (website_url <> '')
 );
+
+create index profile_job_board_id_idx on profile (job_board_id);
+create index profile_location_id_idx on profile (location_id);
 
 create table profile_certification (
     profile_certification_id uuid primary key default gen_random_uuid(),
@@ -111,19 +114,16 @@ create table profile_project (
 
 create index profile_project_profile_id_idx on profile_project (profile_id);
 
-create index profile_board_id_idx on profile (board_id);
-create index profile_location_id_idx on profile (location_id);
-
 create table employer_tier (
     employer_tier_id uuid primary key default gen_random_uuid(),
-    board_id uuid not null references board (board_id),
+    job_board_id uuid  not null references job_board (job_board_id),
 
     name text not null unique check (name <> ''),
     highlight boolean not null default false,
     priority int not null default 0
 );
 
-create index tier_board_id_idx on employer_tier (board_id);
+create index tier_job_board_id_idx on employer_tier (job_board_id);
 
 create table employer (
     employer_id uuid primary key default gen_random_uuid(),
@@ -211,10 +211,10 @@ create index applicant_job_id_idx on applicant (job_id);
 
 create table faq (
     faq_id uuid primary key default gen_random_uuid(),
-    board_id uuid not null references board (board_id),
+    job_board_id uuid  not null references job_board (job_board_id),
 
     answer text not null check (answer <> ''),
     question text not null check (question <> '')
 );
 
-create index faq_board_id_idx on faq (board_id);
+create index faq_job_board_id_idx on faq (job_board_id);

@@ -1,4 +1,4 @@
-//! This module defines the HTTP handlers for the home page of the board site.
+//! This module defines the HTTP handlers for the about page.
 
 use anyhow::Result;
 use axum::{
@@ -11,15 +11,15 @@ use tracing::{debug, instrument};
 
 use crate::{
     db::DynDB,
-    handlers::{error::HandlerError, extractors::BoardId},
-    templates::board::home::Index,
+    handlers::{error::HandlerError, extractors::JobBoardId},
+    templates::jobboard::about::Index,
 };
 
-/// Handler that returns the home index page.
+/// Handler that returns the index page.
 #[instrument(skip_all, err)]
 pub(crate) async fn index(
     State(_db): State<DynDB>,
-    BoardId(board_id): BoardId,
+    JobBoardId(board_id): JobBoardId,
     _uri: Uri,
 ) -> Result<impl IntoResponse, HandlerError> {
     debug!("board_id: {}", board_id);
