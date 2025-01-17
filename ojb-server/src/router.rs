@@ -18,7 +18,11 @@ use tower_http::{
 };
 use tracing::instrument;
 
-use crate::{config::HttpServerConfig, db::DynDB, handlers::jobboard};
+use crate::{
+    config::HttpServerConfig,
+    db::DynDB,
+    handlers::{dashboard, jobboard},
+};
 
 /// Default cache duration.
 #[cfg(debug_assertions)]
@@ -43,7 +47,11 @@ pub(crate) fn setup(cfg: &HttpServerConfig, db: DynDB) -> Router {
     // Setup router
     let mut router = Router::new()
         .route("/", get(jobboard::jobs::page))
+        .route("/jobs", get(jobboard::jobs::page))
         .route("/about", get(jobboard::about::page))
+        .route("/dashboard", get(dashboard::jobs::page))
+        .route("/dashboard/jobs", get(dashboard::jobs::page))
+        .route("/dashboard/settings", get(dashboard::settings::page))
         .route("/health-check", get(health_check))
         .route("/static/{*file}", get(static_handler))
         .layer(SetResponseHeaderLayer::if_not_present(
