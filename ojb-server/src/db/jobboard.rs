@@ -22,7 +22,12 @@ impl DBJobBoard for PgDB {
         let db = self.pool.get().await?;
         let job_board_id = db
             .query_opt(
-                "select job_board_id from job_board where host = $1::text",
+                "
+                select job_board_id
+                from job_board
+                where host = $1::text
+                and active = true
+                ",
                 &[&host],
             )
             .await?

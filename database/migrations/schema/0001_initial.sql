@@ -4,7 +4,8 @@ create extension postgis;
 create table job_board (
     job_board_id uuid primary key default gen_random_uuid(),
 
-    active boolean not null default true,
+    active boolean not null default false,
+    benefits text[],
     created_at timestamptz not null default current_timestamp,
     description text not null check (description <> ''),
     display_name text not null unique check (display_name <> ''),
@@ -13,10 +14,12 @@ create table job_board (
     name text not null unique check (name <> ''),
     theme jsonb not null,
     title text not null check (title <> ''),
+    skills text[],
 
     about_intro text check (about_intro <> ''),
     extra_links jsonb,
-    footer_logo_url text check (footer_logo_url <> '')
+    footer_logo_url text check (footer_logo_url <> ''),
+    updated_at timestamptz
 );
 
 create table location (
@@ -24,6 +27,12 @@ create table location (
 
     city text not null check (city <> ''),
     country text not null check (country <> ''),
+    tsdoc tsvector not null
+        generated always as (
+            setweight(to_tsvector('simple', city), 'A') ||
+            setweight(to_tsvector('simple', country), 'B') ||
+            setweight(to_tsvector('simple', coalesce(state, '')), 'B')
+        ) stored,
 
     coordinates geography(point, 4326),
     state text check (state <> '')
@@ -32,11 +41,12 @@ create table location (
 create index location_city_idx on location (city);
 create index location_coordinates_idx on location using gist (coordinates);
 create index location_country_idx on location (country);
+create index location_tsdoc_idx on location using gin (tsdoc);
 
 create table profile (
     profile_id uuid primary key default gen_random_uuid(),
-    job_board_id uuid  not null references job_board (job_board_id),
-    location_id uuid references location (location_id),
+    job_board_id uuid not null references job_board,
+    location_id uuid references location,
 
     email text not null unique check (email <> ''),
     first_name text not null check (first_name <> ''),
@@ -63,7 +73,7 @@ create index profile_location_id_idx on profile (location_id);
 
 create table profile_certification (
     profile_certification_id uuid primary key default gen_random_uuid(),
-    profile_id uuid not null references profile (profile_id),
+    profile_id uuid not null references profile,
 
     description text not null check (description <> ''),
     end_date date not null,
@@ -76,7 +86,7 @@ create index profile_certification_profile_id_idx on profile_certification (prof
 
 create table profile_education (
     profile_education_id uuid primary key default gen_random_uuid(),
-    profile_id uuid not null references profile (profile_id),
+    profile_id uuid not null references profile,
 
     description text not null check (description <> ''),
     educational_institution text not null check (educational_institution <> ''),
@@ -89,7 +99,7 @@ create index profile_education_profile_id_idx on profile_education (profile_id);
 
 create table profile_employment (
     profile_employment_id uuid primary key default gen_random_uuid(),
-    profile_id uuid not null references profile (profile_id),
+    profile_id uuid not null references profile,
 
     company text not null check (company <> ''),
     current boolean not null default false,
@@ -103,7 +113,7 @@ create index profile_employment_profile_id_idx on profile_employment (profile_id
 
 create table profile_project (
     profile_project_id uuid primary key default gen_random_uuid(),
-    profile_id uuid not null references profile (profile_id),
+    profile_id uuid not null references profile,
 
     description text not null check (description <> ''),
     title text not null check (title <> ''),
@@ -116,7 +126,7 @@ create index profile_project_profile_id_idx on profile_project (profile_id);
 
 create table employer_tier (
     employer_tier_id uuid primary key default gen_random_uuid(),
-    job_board_id uuid  not null references job_board (job_board_id),
+    job_board_id uuid not null references job_board,
 
     name text not null unique check (name <> ''),
     highlight boolean not null default false,
@@ -127,8 +137,8 @@ create index tier_job_board_id_idx on employer_tier (job_board_id);
 
 create table employer (
     employer_id uuid primary key default gen_random_uuid(),
-    employer_tier_id uuid not null references employer_tier (employer_tier_id),
-    location_id uuid references location (location_id),
+    employer_tier_id uuid not null references employer_tier,
+    location_id uuid references location,
 
     company text not null check (company <> ''),
     created_at timestamptz not null default current_timestamp,
@@ -145,29 +155,42 @@ create index employer_location_id_idx on employer (location_id);
 
 create table job_type (
     job_type_id uuid primary key default gen_random_uuid(),
+
     name text not null unique check (name <> '')
 );
 
-insert into job_type (name) values ('Full Time');
-insert into job_type (name) values ('Part Time');
-insert into job_type (name) values ('Contractor');
-insert into job_type (name) values ('Internship');
+insert into job_type (name) values ('full-time');
+insert into job_type (name) values ('part-time');
+insert into job_type (name) values ('contractor');
+insert into job_type (name) values ('internship');
+
+create table job_status (
+    job_status_id uuid primary key default gen_random_uuid(),
+
+    name text not null unique check (name <> '')
+);
+
+insert into job_status (name) values ('archived');
+insert into job_status (name) values ('draft');
+insert into job_status (name) values ('published');
 
 create table workplace (
     workplace_id uuid primary key default gen_random_uuid(),
+
     name text not null unique check (name <> '')
 );
 
-insert into workplace (name) values ('Hybrid');
-insert into workplace (name) values ('On Site');
-insert into workplace (name) values ('Remote');
+insert into workplace (name) values ('hybrid');
+insert into workplace (name) values ('on-site');
+insert into workplace (name) values ('remote');
 
 create table job (
     job_id uuid primary key default gen_random_uuid(),
-    employer_id uuid not null references employer (employer_id),
-    job_type_id uuid not null references job_type (job_type_id),
-    workplace_id uuid not null references workplace (workplace_id),
-    location_id uuid references location (location_id),
+    employer_id uuid not null references employer,
+    type text not null references job_type (name),
+    status text not null references job_status (name),
+    location_id uuid references location,
+    workplace text not null references workplace (name),
 
     created_at timestamptz not null default current_timestamp,
     title text not null check (title <> ''),
@@ -191,14 +214,15 @@ create table job (
 );
 
 create index job_employer_id_idx on job (employer_id);
-create index job_job_type_id_idx on job (job_type_id);
-create index job_workplace_id_idx on job (workplace_id);
 create index job_location_id_idx on job (location_id);
+create index job_type_idx on job (type);
+create index job_status_idx on job (status);
+create index job_workplace_idx on job (workplace);
 
 create table applicant (
     applicant_id uuid primary key default gen_random_uuid(),
-    profile_id uuid not null references profile (profile_id),
-    job_id uuid not null references job (job_id),
+    profile_id uuid not null references profile,
+    job_id uuid not null references job,
 
     cover_letter text not null check (cover_letter <> ''),
     created_at timestamptz not null default current_timestamp,
@@ -211,7 +235,7 @@ create index applicant_job_id_idx on applicant (job_id);
 
 create table faq (
     faq_id uuid primary key default gen_random_uuid(),
-    job_board_id uuid  not null references job_board (job_board_id),
+    job_board_id uuid not null references job_board,
 
     answer text not null check (answer <> ''),
     question text not null check (question <> '')
