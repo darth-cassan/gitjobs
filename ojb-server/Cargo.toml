@@ -23,7 +23,6 @@ num-format = { workspace = true }
 openssl = { workspace = true }
 palette = { workspace = true }
 postgres-openssl = { workspace = true }
-postgres-types = { workspace = true }
 rinja = { workspace = true }
 rust-embed = { workspace = true }
 serde = { workspace = true }

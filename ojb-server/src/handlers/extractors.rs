@@ -1,8 +1,10 @@
 //! Custom extractors for handlers.
 
+use std::collections::HashMap;
+
 use anyhow::Result;
 use axum::{
-    extract::FromRequestParts,
+    extract::{FromRequestParts, Query},
     http::{header::HOST, request::Parts, StatusCode},
 };
 use cached::proc_macro::cached;
@@ -57,4 +59,25 @@ async fn lookup_job_board_id(db: DynDB, host: &str) -> Result<Option<Uuid>> {
         return Ok(None);
     }
     db.get_job_board_id(host).await
+}
+
+/// Custom extractor to get the employer id from the request's query string.
+pub(crate) struct EmployerId(pub Uuid);
+
+impl FromRequestParts<router::State> for EmployerId {
+    type Rejection = (StatusCode, &'static str);
+
+    #[instrument(skip_all, err(Debug))]
+    async fn from_request_parts(parts: &mut Parts, state: &router::State) -> Result<Self, Self::Rejection> {
+        let Ok(query) = Query::<HashMap<String, String>>::from_request_parts(parts, state).await else {
+            return Err((StatusCode::BAD_REQUEST, "error parsing query string"));
+        };
+        let Some(employer_id) = query.get("employer_id") else {
+            return Err((StatusCode::BAD_REQUEST, "missing employer_id parameter"));
+        };
+        let Ok(employer_id) = Uuid::parse_str(employer_id) else {
+            return Err((StatusCode::BAD_REQUEST, "employer_id should be a valid uuid"));
+        };
+        Ok(EmployerId(employer_id))
+    }
 }

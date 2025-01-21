@@ -195,8 +195,8 @@ create table job (
     title text not null check (title <> ''),
     description text not null check (description <> ''),
 
-    apply_url text check (apply_url <> ''),
     apply_instructions text check (apply_instructions <> ''),
+    apply_url text check (apply_url <> ''),
     archived_at timestamptz,
     benefits text[],
     open_source int check (open_source >= 0 and open_source <= 100),
@@ -205,7 +205,7 @@ create table job (
     salary_currency text check (salary_currency <> ''),
     salary_max bigint check (salary_max >= 0),
     salary_min bigint check (salary_min >= 0),
-    salary_timeframe text check (salary_timeframe <> ''),
+    salary_period text check (salary_period <> ''),
     skills text[],
     updated_at timestamptz,
     upstream_commitment int check (upstream_commitment >= 0 and upstream_commitment <= 100)

@@ -1,9 +1,9 @@
 //! This module defines some templates and types used in the jobs page.
 
 use chrono::{DateTime, Utc};
-use postgres_types::{FromSql, ToSql};
 use rinja::Template;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::templates::{filters, helpers::DATE_FORMAT};
 
@@ -25,8 +25,8 @@ pub(crate) struct ListPage {
 /// Job summary.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub(crate) struct JobSummary {
-    pub created_at: DateTime<Utc>,
     pub job_id: uuid::Uuid,
+    pub created_at: DateTime<Utc>,
     pub title: String,
     pub status: JobStatus,
 
@@ -37,7 +37,8 @@ pub(crate) struct JobSummary {
 }
 
 /// Job status.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromSql, ToSql)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
 pub(crate) enum JobStatus {
     Archived,
     Draft,
@@ -47,9 +48,113 @@ pub(crate) enum JobStatus {
 impl std::fmt::Display for JobStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            JobStatus::Archived => write!(f, "Archived"),
-            JobStatus::Draft => write!(f, "Draft"),
-            JobStatus::Published => write!(f, "Published"),
+            JobStatus::Archived => write!(f, "archived"),
+            JobStatus::Draft => write!(f, "draft"),
+            JobStatus::Published => write!(f, "published"),
+        }
+    }
+}
+
+impl std::str::FromStr for JobStatus {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "archived" => Ok(JobStatus::Archived),
+            "draft" => Ok(JobStatus::Draft),
+            "published" => Ok(JobStatus::Published),
+            _ => Err("invalid job status".to_string()),
+        }
+    }
+}
+
+/// New job details.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[allow(clippy::struct_field_names)]
+pub(crate) struct NewJob {
+    pub description: String,
+    pub title: String,
+    #[serde(rename = "type")]
+    pub type_: JobType,
+    pub workplace: Workplace,
+
+    pub apply_instructions: Option<String>,
+    pub apply_url: Option<String>,
+    pub benefits: Option<Vec<String>>,
+    pub location_id: Option<Uuid>,
+    pub open_source: Option<i32>,
+    pub salary: Option<i64>,
+    pub salary_currency: Option<String>,
+    pub salary_min: Option<i64>,
+    pub salary_max: Option<i64>,
+    pub salary_period: Option<String>,
+    pub skills: Option<Vec<String>>,
+    pub upstream_commitment: Option<i32>,
+}
+
+/// Job type.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum JobType {
+    Contractor,
+    Internship,
+    FullTime,
+    PartTime,
+}
+
+impl std::fmt::Display for JobType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            JobType::Contractor => write!(f, "contractor"),
+            JobType::Internship => write!(f, "internship"),
+            JobType::FullTime => write!(f, "full-time"),
+            JobType::PartTime => write!(f, "part-time"),
+        }
+    }
+}
+
+impl std::str::FromStr for JobType {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "contractor" => Ok(JobType::Contractor),
+            "internship" => Ok(JobType::Internship),
+            "full-time" => Ok(JobType::FullTime),
+            "part-time" => Ok(JobType::PartTime),
+            _ => Err("invalid job type".to_string()),
+        }
+    }
+}
+
+/// Job workplace.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum Workplace {
+    Hybrid,
+    OnSite,
+    Remote,
+}
+
+impl std::fmt::Display for Workplace {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Workplace::Hybrid => write!(f, "hybrid"),
+            Workplace::OnSite => write!(f, "on-site"),
+            Workplace::Remote => write!(f, "remote"),
+        }
+    }
+}
+
+impl std::str::FromStr for Workplace {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "hybrid" => Ok(Workplace::Hybrid),
+            "on-site" => Ok(Workplace::OnSite),
+            "remote" => Ok(Workplace::Remote),
+            _ => Err("invalid workplace".to_string()),
         }
     }
 }

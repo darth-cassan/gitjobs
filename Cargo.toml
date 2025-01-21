@@ -27,7 +27,6 @@ num-format = "0.4.4"
 openssl = { version = "0.10.68", features = ["vendored"] }
 palette = "0.7.6"
 postgres-openssl = "0.5.0"
-postgres-types = { version = "0.2.8", features = ["derive"] }
 rinja = { git = "https://github.com/rinja-rs/rinja", rev = "be9069f", features = ["serde_json"] }
 rust-embed = "8.5.0"
 serde = { version = "1.0.217", features = ["derive"] }

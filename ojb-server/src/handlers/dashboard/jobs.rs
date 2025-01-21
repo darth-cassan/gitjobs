@@ -1,20 +1,21 @@
 //! This module defines the HTTP handlers for the jobs page.
 
-use std::collections::HashMap;
-
 use anyhow::Result;
 use axum::{
-    extract::{Query, State},
+    extract::State,
     http::StatusCode,
     response::{Html, IntoResponse},
+    Form,
 };
 use rinja::Template;
 use tracing::instrument;
-use uuid::Uuid;
 
 use crate::{
     db::DynDB,
-    handlers::{error::HandlerError, extractors::JobBoardId},
+    handlers::{
+        error::HandlerError,
+        extractors::{EmployerId, JobBoardId},
+    },
     templates::dashboard::jobs,
 };
 
@@ -37,17 +38,22 @@ pub(crate) async fn add_page(
 #[instrument(skip_all, err)]
 pub(crate) async fn list_page(
     State(db): State<DynDB>,
-    Query(query): Query<HashMap<String, String>>,
+    EmployerId(employer_id): EmployerId,
 ) -> Result<impl IntoResponse, HandlerError> {
-    let Some(employer_id) = query.get("employer_id") else {
-        return Ok((
-            StatusCode::BAD_REQUEST,
-            Html("missing employer_id parameter".to_string()),
-        ));
-    };
-    let employer_id = Uuid::parse_str(employer_id).expect("employer_id to be valid UUID");
     let jobs = db.list_employer_jobs(employer_id).await?;
     let template = jobs::ListPage { jobs };
 
     Ok((StatusCode::OK, Html(template.render()?)))
+}
+
+/// Handler that adds a job to the job board.
+#[instrument(skip_all, err)]
+pub(crate) async fn add_job(
+    State(db): State<DynDB>,
+    EmployerId(employer_id): EmployerId,
+    Form(job): Form<jobs::NewJob>,
+) -> Result<impl IntoResponse, HandlerError> {
+    db.add_job(employer_id, job).await?;
+
+    Ok(StatusCode::CREATED)
 }
