@@ -18,9 +18,24 @@ use crate::{
     templates::dashboard::jobs,
 };
 
-/// Handler that returns the jobs page.
+/// Handler that returns the page to add a new job.
 #[instrument(skip_all, err)]
-pub(crate) async fn page(
+pub(crate) async fn add_page(
+    State(db): State<DynDB>,
+    JobBoardId(job_board_id): JobBoardId,
+) -> Result<impl IntoResponse, HandlerError> {
+    let job_board = db.get_job_board(job_board_id).await?;
+    let template = jobs::AddPage {
+        benefits: job_board.benefits,
+        skills: job_board.skills,
+    };
+
+    Ok(Html(template.render()?))
+}
+
+/// Handler that returns the jobs list page.
+#[instrument(skip_all, err)]
+pub(crate) async fn list_page(
     State(db): State<DynDB>,
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, HandlerError> {
@@ -32,22 +47,7 @@ pub(crate) async fn page(
     };
     let employer_id = Uuid::parse_str(employer_id).expect("employer_id to be valid UUID");
     let jobs = db.list_employer_jobs(employer_id).await?;
-    let template = jobs::Page { jobs };
+    let template = jobs::ListPage { jobs };
 
     Ok((StatusCode::OK, Html(template.render()?)))
-}
-
-/// Handler that returns the form to add a new job.
-#[instrument(skip_all, err)]
-pub(crate) async fn add_form(
-    State(db): State<DynDB>,
-    JobBoardId(job_board_id): JobBoardId,
-) -> Result<impl IntoResponse, HandlerError> {
-    let job_board = db.get_job_board(job_board_id).await?;
-    let template = jobs::AddForm {
-        benefits: job_board.benefits,
-        skills: job_board.skills,
-    };
-
-    Ok(Html(template.render()?))
 }

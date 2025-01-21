@@ -7,10 +7,18 @@ use serde::{Deserialize, Serialize};
 
 use crate::templates::{filters, helpers::DATE_FORMAT};
 
-/// Jobs page template.
+/// Add job page template.
 #[derive(Debug, Clone, Template, Serialize, Deserialize)]
-#[template(path = "dashboard/jobs/page.html")]
-pub(crate) struct Page {
+#[template(path = "dashboard/jobs/add.html")]
+pub(crate) struct AddPage {
+    pub benefits: Vec<String>,
+    pub skills: Vec<String>,
+}
+
+/// Jobs list page template.
+#[derive(Debug, Clone, Template, Serialize, Deserialize)]
+#[template(path = "dashboard/jobs/list.html")]
+pub(crate) struct ListPage {
     pub jobs: Vec<JobSummary>,
 }
 
@@ -44,14 +52,6 @@ impl std::fmt::Display for JobStatus {
             JobStatus::Published => write!(f, "Published"),
         }
     }
-}
-
-/// Add job form.
-#[derive(Debug, Clone, Template, Serialize, Deserialize)]
-#[template(path = "dashboard/jobs/add_form.html")]
-pub(crate) struct AddForm {
-    pub benefits: Vec<String>,
-    pub skills: Vec<String>,
 }
 
 /// Job board.
