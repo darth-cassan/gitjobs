@@ -1,26 +1,29 @@
 //! This module defines the HTTP handlers for the jobs page.
 
+use std::collections::HashMap;
+
 use anyhow::Result;
 use axum::{
-    extract::State,
+    extract::{Query, State},
     response::{Html, IntoResponse},
 };
 use rinja::Template;
-use tracing::{debug, instrument};
+use tracing::instrument;
+use uuid::Uuid;
 
-use crate::{
-    db::DynDB,
-    handlers::{error::HandlerError, extractors::JobBoardId},
-    templates::dashboard::jobs::Page,
-};
+use crate::{db::DynDB, handlers::error::HandlerError, templates::dashboard::jobs::Page};
 
 /// Handler that returns the jobs page.
 #[instrument(skip_all, err)]
 pub(crate) async fn page(
-    State(_db): State<DynDB>,
-    JobBoardId(job_board_id): JobBoardId,
+    State(db): State<DynDB>,
+    Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, HandlerError> {
-    debug!("job_board_id: {}", job_board_id);
+    // Prepare template
+    let msg = "expected employer query string parameter (uuid)"; // TODO
+    let employer_id = Uuid::parse_str(query.get("employer").expect(msg)).expect(msg);
+    let jobs = db.list_employer_jobs(employer_id).await?;
+    let template = Page { jobs };
 
-    Ok(Html(Page {}.render()?))
+    Ok(Html(template.render()?))
 }

@@ -6,7 +6,7 @@ use axum::{
     response::{Html, IntoResponse},
 };
 use rinja::Template;
-use tracing::{debug, instrument};
+use tracing::instrument;
 
 use crate::{
     db::DynDB,
@@ -18,9 +18,7 @@ use crate::{
 #[instrument(skip_all, err)]
 pub(crate) async fn page(
     State(_db): State<DynDB>,
-    JobBoardId(job_board_id): JobBoardId,
+    JobBoardId(_job_board_id): JobBoardId,
 ) -> Result<impl IntoResponse, HandlerError> {
-    debug!("job_board_id: {}", job_board_id);
-
     Ok(Html(Page {}.render()?))
 }

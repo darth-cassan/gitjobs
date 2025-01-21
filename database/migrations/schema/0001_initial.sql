@@ -198,9 +198,8 @@ create table job (
 
     apply_url text check (apply_url <> ''),
     apply_instructions text check (apply_instructions <> ''),
+    archived_at timestamptz,
     benefits text[],
-    expires_at timestamptz,
-    location geography(point, 4326),
     open_source int check (open_source >= 0 and open_source <= 100),
     published_at timestamptz,
     salary bigint check (salary >= 0),

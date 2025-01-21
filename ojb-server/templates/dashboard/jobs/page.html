@@ -1,1 +1,24 @@
 <h1>Dashboard jobs page</h1>
+
+<table>
+  <tr>
+    <th>Title</th>
+    <th>City</th>
+    <th>Country</th>
+    <th>Status</th>
+    <th>Created</th>
+    <th>Published</th>
+    <th>Archived</th>
+  </tr>
+  {% for job in jobs %}
+    <tr>
+      <td>{{ job.title }}</td>
+      <td>{{ job.city|display_some }}</td>
+      <td>{{ job.country|display_some_or("-") }}</td>
+      <td>{{ job.status }}</td>
+      <td>{{ job.created_at.format(DATE_FORMAT) }}</td>
+      <td>{{ job.published_at|display_some_date(DATE_FORMAT) }}</td>
+      <td>{{ job.archived_at|display_some_date_or(DATE_FORMAT, "-") }}</td>
+    </tr>
+  {% endfor %}
+</table>
