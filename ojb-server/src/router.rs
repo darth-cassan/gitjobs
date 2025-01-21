@@ -21,7 +21,7 @@ use tracing::instrument;
 use crate::{
     config::HttpServerConfig,
     db::DynDB,
-    handlers::{dashboard, jobboard},
+    handlers::{common, dashboard, jobboard},
 };
 
 /// Default cache duration.
@@ -52,6 +52,7 @@ pub(crate) fn setup(cfg: &HttpServerConfig, db: DynDB) -> Router {
         .route("/dashboard", get(dashboard::jobs::page))
         .route("/dashboard/jobs", get(dashboard::jobs::page))
         .route("/dashboard/settings", get(dashboard::settings::page))
+        .route("/locations/search", get(common::search_locations))
         .route("/health-check", get(health_check))
         .route("/static/{*file}", get(static_handler))
         .layer(SetResponseHeaderLayer::if_not_present(

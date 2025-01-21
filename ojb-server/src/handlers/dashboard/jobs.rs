@@ -19,7 +19,6 @@ pub(crate) async fn page(
     State(db): State<DynDB>,
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, HandlerError> {
-    // Prepare template
     let msg = "expected employer query string parameter (uuid)"; // TODO
     let employer_id = Uuid::parse_str(query.get("employer").expect(msg)).expect(msg);
     let jobs = db.list_employer_jobs(employer_id).await?;

@@ -1,0 +1,16 @@
+<table>
+  <tr>
+    <th>ID</th>
+    <th>City</th>
+    <th>State</th>
+    <th>Country</th>
+  </tr>
+  {% for l in locations %}
+    <tr>
+      <td>{{ l.location_id }}</td>
+      <td>{{ l.city }}</td>
+      <td>{{ l.state|display_some }}</td>
+      <td>{{ l.country }}</td>
+    </tr>
+  {% endfor %}
+</table>

@@ -1,4 +1,4 @@
--- Nothing to do
+{{ template "common/search_locations.sql" }}
 
 ---- create above / drop below ----
 

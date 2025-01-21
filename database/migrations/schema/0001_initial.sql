@@ -1,5 +1,6 @@
 create extension pgcrypto;
 create extension postgis;
+create extension pg_trgm;
 
 create table job_board (
     job_board_id uuid primary key default gen_random_uuid(),
@@ -38,9 +39,7 @@ create table location (
     state text check (state <> '')
 );
 
-create index location_city_idx on location (city);
 create index location_coordinates_idx on location using gist (coordinates);
-create index location_country_idx on location (country);
 create index location_tsdoc_idx on location using gin (tsdoc);
 
 create table profile (
