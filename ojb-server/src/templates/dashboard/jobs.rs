@@ -45,3 +45,18 @@ impl std::fmt::Display for JobStatus {
         }
     }
 }
+
+/// Add job form.
+#[derive(Debug, Clone, Template, Serialize, Deserialize)]
+#[template(path = "dashboard/jobs/add_form.html")]
+pub(crate) struct AddForm {
+    pub benefits: Vec<String>,
+    pub skills: Vec<String>,
+}
+
+/// Job board.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub(crate) struct JobBoard {
+    pub benefits: Vec<String>,
+    pub skills: Vec<String>,
+}

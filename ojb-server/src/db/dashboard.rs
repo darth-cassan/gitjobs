@@ -4,19 +4,46 @@ use anyhow::Result;
 use async_trait::async_trait;
 use tracing::instrument;
 
-use crate::templates::dashboard::jobs::JobSummary;
+use crate::templates::dashboard::jobs::{JobBoard, JobSummary};
 
 use super::PgDB;
 
 /// Trait that defines some database operations used in the dashboard.
 #[async_trait]
 pub(crate) trait DBDashBoard {
+    /// Get job board.
+    async fn get_job_board(&self, job_board_id: uuid::Uuid) -> Result<JobBoard>;
+
     /// List employer jobs.
     async fn list_employer_jobs(&self, employer_id: uuid::Uuid) -> Result<Vec<JobSummary>>;
 }
 
 #[async_trait]
 impl DBDashBoard for PgDB {
+    /// [DBDashBoard::get_job_board]
+    #[instrument(skip(self), err)]
+    async fn get_job_board(&self, job_board_id: uuid::Uuid) -> Result<JobBoard> {
+        let db = self.pool.get().await?;
+        let row = db
+            .query_one(
+                "
+                select
+                    benefits,
+                    skills
+                from job_board
+                where job_board_id = $1::uuid
+                ",
+                &[&job_board_id],
+            )
+            .await?;
+        let job_board = JobBoard {
+            benefits: row.get("benefits"),
+            skills: row.get("skills"),
+        };
+
+        Ok(job_board)
+    }
+
     /// [DBDashBoard::list_employer_jobs]
     #[instrument(skip(self), err)]
     async fn list_employer_jobs(&self, employer_id: uuid::Uuid) -> Result<Vec<JobSummary>> {
