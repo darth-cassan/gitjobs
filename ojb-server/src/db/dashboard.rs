@@ -14,11 +14,20 @@ pub(crate) trait DBDashBoard {
     /// Add job to the job board.
     async fn add_job(&self, employer_id: uuid::Uuid, job: NewJob) -> Result<()>;
 
+    /// Archive job.
+    async fn archive_job(&self, job_id: uuid::Uuid) -> Result<()>;
+
+    /// Delete job.
+    async fn delete_job(&self, job_id: uuid::Uuid) -> Result<()>;
+
     /// Get job board.
     async fn get_job_board(&self, job_board_id: uuid::Uuid) -> Result<JobBoard>;
 
     /// List employer jobs.
     async fn list_employer_jobs(&self, employer_id: uuid::Uuid) -> Result<Vec<JobSummary>>;
+
+    /// Publish job.
+    async fn publish_job(&self, job_id: uuid::Uuid) -> Result<()>;
 }
 
 #[async_trait]
@@ -97,6 +106,37 @@ impl DBDashBoard for PgDB {
         Ok(())
     }
 
+    /// [DBDashBoard::archive_job]
+    #[instrument(skip(self), err)]
+    async fn archive_job(&self, job_id: uuid::Uuid) -> Result<()> {
+        let db = self.pool.get().await?;
+        db.execute(
+            "
+                    update job
+                    set
+                        status = 'archived',
+                        archived_at = current_timestamp,
+                        updated_at = current_timestamp
+                    where job_id = $1::uuid
+                    and status = 'published';
+                    ",
+            &[&job_id],
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    /// [DBDashBoard::delete_job]
+    #[instrument(skip(self), err)]
+    async fn delete_job(&self, job_id: uuid::Uuid) -> Result<()> {
+        let db = self.pool.get().await?;
+        db.execute("delete from job where job_id = $1::uuid;", &[&job_id])
+            .await?;
+
+        Ok(())
+    }
+
     /// [DBDashBoard::get_job_board]
     #[instrument(skip(self), err)]
     async fn get_job_board(&self, job_board_id: uuid::Uuid) -> Result<JobBoard> {
@@ -159,5 +199,27 @@ impl DBDashBoard for PgDB {
             .collect();
 
         Ok(jobs)
+    }
+
+    /// [DBDashBoard::publish_job]
+    #[instrument(skip(self), err)]
+    async fn publish_job(&self, job_id: uuid::Uuid) -> Result<()> {
+        let db = self.pool.get().await?;
+        db.execute(
+            "
+            update job
+            set
+                status = 'published',
+                published_at = current_timestamp,
+                updated_at = current_timestamp,
+                archived_at = null
+            where job_id = $1::uuid
+            and status <> 'published';
+            ",
+            &[&job_id],
+        )
+        .await?;
+
+        Ok(())
     }
 }
