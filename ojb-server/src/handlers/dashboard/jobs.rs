@@ -20,6 +20,8 @@ use crate::{
     templates::dashboard::jobs,
 };
 
+// Pages handlers.
+
 /// Handler that returns the page to add a new job.
 #[instrument(skip_all, err)]
 pub(crate) async fn add_page(
@@ -47,21 +49,42 @@ pub(crate) async fn list_page(
     Ok((StatusCode::OK, Html(template.render()?)))
 }
 
-/// Handler that adds a job to the job board.
+/// Handler that returns the page to update a job.
 #[instrument(skip_all, err)]
-pub(crate) async fn add_job(
+pub(crate) async fn update_page(
+    State(db): State<DynDB>,
+    Path(job_id): Path<Uuid>,
+    JobBoardId(job_board_id): JobBoardId,
+) -> Result<impl IntoResponse, HandlerError> {
+    let (job_board, job_details) =
+        tokio::try_join!(db.get_job_board(job_board_id), db.get_job_details(job_id),)?;
+
+    let template = jobs::UpdatePage {
+        benefits: job_board.benefits,
+        job_details,
+        skills: job_board.skills,
+    };
+
+    Ok(Html(template.render()?))
+}
+
+// Actions handlers.
+
+/// Handler that adds a job.
+#[instrument(skip_all, err)]
+pub(crate) async fn add(
     State(db): State<DynDB>,
     EmployerId(employer_id): EmployerId,
-    Form(job): Form<jobs::NewJob>,
+    Form(job_details): Form<jobs::JobDetails>,
 ) -> Result<impl IntoResponse, HandlerError> {
-    db.add_job(employer_id, job).await?;
+    db.add_job(employer_id, job_details).await?;
 
     Ok((StatusCode::CREATED, [("HX-Push-Url", "/dashboard/jobs/list")]))
 }
 
 /// Handler that archives a job.
 #[instrument(skip_all, err)]
-pub(crate) async fn archive_job(
+pub(crate) async fn archive(
     State(db): State<DynDB>,
     Path(job_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, HandlerError> {
@@ -72,7 +95,7 @@ pub(crate) async fn archive_job(
 
 /// Handler that deletes a job.
 #[instrument(skip_all, err)]
-pub(crate) async fn delete_job(
+pub(crate) async fn delete(
     State(db): State<DynDB>,
     Path(job_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, HandlerError> {
@@ -83,11 +106,23 @@ pub(crate) async fn delete_job(
 
 /// Handler that publishes a job.
 #[instrument(skip_all, err)]
-pub(crate) async fn publish_job(
+pub(crate) async fn publish(
     State(db): State<DynDB>,
     Path(job_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, HandlerError> {
     db.publish_job(job_id).await?;
 
     Ok(StatusCode::NO_CONTENT)
+}
+
+/// Handler that updates a job.
+#[instrument(skip_all, err)]
+pub(crate) async fn update(
+    State(db): State<DynDB>,
+    Path(job_id): Path<Uuid>,
+    Form(job_details): Form<jobs::JobDetails>,
+) -> Result<impl IntoResponse, HandlerError> {
+    db.update_job(job_id, job_details).await?;
+
+    Ok((StatusCode::NO_CONTENT, [("HX-Push-Url", "/dashboard/jobs/list")]))
 }

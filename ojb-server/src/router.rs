@@ -45,28 +45,18 @@ pub(crate) struct State {
 #[instrument(skip_all)]
 pub(crate) fn setup(cfg: &HttpServerConfig, db: DynDB) -> Router {
     // Setup router
+    #[rustfmt::skip]
     let mut router = Router::new()
         .route("/", get(jobboard::jobs::page))
         .route("/jobs", get(jobboard::jobs::page))
         .route("/about", get(jobboard::about::page))
         .route("/dashboard", get(dashboard::home::page))
         .route("/dashboard/jobs/list", get(dashboard::jobs::list_page))
-        .route(
-            "/dashboard/jobs/add",
-            get(dashboard::jobs::add_page).post(dashboard::jobs::add_job),
-        )
-        .route(
-            "/dashboard/jobs/{:job_id}/archive",
-            put(dashboard::jobs::archive_job),
-        )
-        .route(
-            "/dashboard/jobs/{:job_id}/delete",
-            delete(dashboard::jobs::delete_job),
-        )
-        .route(
-            "/dashboard/jobs/{:job_id}/publish",
-            put(dashboard::jobs::publish_job),
-        )
+        .route("/dashboard/jobs/add", get(dashboard::jobs::add_page).post(dashboard::jobs::add))
+        .route("/dashboard/jobs/{:job_id}/archive", put(dashboard::jobs::archive))
+        .route("/dashboard/jobs/{:job_id}/delete", delete(dashboard::jobs::delete))
+        .route("/dashboard/jobs/{:job_id}/publish", put(dashboard::jobs::publish))
+        .route("/dashboard/jobs/{:job_id}/update", get(dashboard::jobs::update_page).put(dashboard::jobs::update))
         .route("/dashboard/settings", get(dashboard::settings::page))
         .route("/locations/search", get(common::search_locations))
         .route("/health-check", get(health_check))

@@ -7,6 +7,8 @@ use uuid::Uuid;
 
 use crate::templates::{filters, helpers::DATE_FORMAT};
 
+// Pages templates.
+
 /// Add job page template.
 #[derive(Debug, Clone, Template, Serialize, Deserialize)]
 #[template(path = "dashboard/jobs/add.html")]
@@ -22,6 +24,15 @@ pub(crate) struct ListPage {
     pub jobs: Vec<JobSummary>,
 }
 
+/// Update job page template.
+#[derive(Debug, Clone, Template, Serialize, Deserialize)]
+#[template(path = "dashboard/jobs/update.html")]
+pub(crate) struct UpdatePage {
+    pub benefits: Vec<String>,
+    pub job_details: JobDetails,
+    pub skills: Vec<String>,
+}
+
 /// Job summary.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub(crate) struct JobSummary {
@@ -34,6 +45,34 @@ pub(crate) struct JobSummary {
     pub city: Option<String>,
     pub country: Option<String>,
     pub published_at: Option<DateTime<Utc>>,
+}
+
+/// Job details.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[allow(clippy::struct_field_names)]
+pub(crate) struct JobDetails {
+    pub description: String,
+    pub status: JobStatus,
+    pub title: String,
+    #[serde(rename = "type")]
+    pub type_: JobType,
+    pub workplace: Workplace,
+
+    pub apply_instructions: Option<String>,
+    pub apply_url: Option<String>,
+    pub benefits: Option<Vec<String>>,
+    pub city: Option<String>,
+    pub country: Option<String>,
+    pub location_id: Option<Uuid>,
+    pub open_source: Option<i32>,
+    pub salary: Option<i64>,
+    pub salary_currency: Option<String>,
+    pub salary_min: Option<i64>,
+    pub salary_max: Option<i64>,
+    pub salary_period: Option<String>,
+    pub skills: Option<Vec<String>>,
+    pub state: Option<String>,
+    pub upstream_commitment: Option<i32>,
 }
 
 /// Job status.
@@ -66,31 +105,6 @@ impl std::str::FromStr for JobStatus {
             _ => Err("invalid job status".to_string()),
         }
     }
-}
-
-/// New job details.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[allow(clippy::struct_field_names)]
-pub(crate) struct NewJob {
-    pub description: String,
-    pub status: JobStatus,
-    pub title: String,
-    #[serde(rename = "type")]
-    pub type_: JobType,
-    pub workplace: Workplace,
-
-    pub apply_instructions: Option<String>,
-    pub apply_url: Option<String>,
-    pub benefits: Option<Vec<String>>,
-    pub location_id: Option<Uuid>,
-    pub open_source: Option<i32>,
-    pub salary: Option<i64>,
-    pub salary_currency: Option<String>,
-    pub salary_min: Option<i64>,
-    pub salary_max: Option<i64>,
-    pub salary_period: Option<String>,
-    pub skills: Option<Vec<String>>,
-    pub upstream_commitment: Option<i32>,
 }
 
 /// Job type.
