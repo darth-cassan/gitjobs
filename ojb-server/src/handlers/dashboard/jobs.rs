@@ -55,5 +55,5 @@ pub(crate) async fn add_job(
 ) -> Result<impl IntoResponse, HandlerError> {
     db.add_job(employer_id, job).await?;
 
-    Ok(StatusCode::CREATED)
+    Ok((StatusCode::CREATED, [("HX-Push-Url", "/dashboard/jobs")]))
 }
