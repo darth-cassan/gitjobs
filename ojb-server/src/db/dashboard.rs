@@ -4,7 +4,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use tracing::instrument;
 
-use crate::templates::dashboard::jobs::{JobBoard, JobStatus, JobSummary, NewJob};
+use crate::templates::dashboard::jobs::{JobBoard, JobSummary, NewJob};
 
 use super::PgDB;
 
@@ -47,8 +47,10 @@ impl DBDashBoard for PgDB {
                 salary_max,
                 salary_period,
                 skills,
-                upstream_commitment
-            ) values (
+                upstream_commitment,
+                published_at
+            )
+            select
                 $1::uuid,
                 $2::text,
                 $3::text,
@@ -66,13 +68,13 @@ impl DBDashBoard for PgDB {
                 $15::bigint,
                 $16::text,
                 $17::text[],
-                $18::int
-            )
+                $18::int,
+                case when $3::text = 'published' then current_timestamp else null end;
             ",
             &[
                 &employer_id,
                 &job.type_.to_string(),
-                &JobStatus::Draft.to_string(),
+                &job.status.to_string(),
                 &job.location_id,
                 &job.workplace.to_string(),
                 &job.title,

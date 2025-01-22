@@ -73,6 +73,7 @@ impl std::str::FromStr for JobStatus {
 #[allow(clippy::struct_field_names)]
 pub(crate) struct NewJob {
     pub description: String,
+    pub status: JobStatus,
     pub title: String,
     #[serde(rename = "type")]
     pub type_: JobType,
