@@ -49,7 +49,7 @@ pub(crate) fn setup(cfg: &HttpServerConfig, db: DynDB) -> Router {
         .route("/", get(jobboard::jobs::page))
         .route("/jobs", get(jobboard::jobs::page))
         .route("/about", get(jobboard::about::page))
-        .route("/dashboard", get(dashboard::jobs::list_page))
+        .route("/dashboard", get(dashboard::page))
         .route("/dashboard/jobs", get(dashboard::jobs::list_page))
         .route(
             "/dashboard/jobs/add",
