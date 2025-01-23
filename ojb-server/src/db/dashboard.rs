@@ -4,7 +4,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use tracing::instrument;
 
-use crate::templates::dashboard::jobs::{JobBoard, JobDetails, JobSummary};
+use crate::templates::dashboard::jobs::{EmployerDetails, JobBoard, JobDetails, JobSummary};
 
 use super::PgDB;
 
@@ -19,6 +19,9 @@ pub(crate) trait DBDashBoard {
 
     /// Delete job.
     async fn delete_job(&self, job_id: uuid::Uuid) -> Result<()>;
+
+    /// Get employer details.
+    async fn get_employer_details(&self, employer_id: uuid::Uuid) -> Result<EmployerDetails>;
 
     /// Get job board.
     async fn get_job_board(&self, job_board_id: uuid::Uuid) -> Result<JobBoard>;
@@ -141,6 +144,41 @@ impl DBDashBoard for PgDB {
             .await?;
 
         Ok(())
+    }
+
+    /// [DBDashBoard::get_employer_details]
+    #[instrument(skip(self), err)]
+    async fn get_employer_details(&self, employer_id: uuid::Uuid) -> Result<EmployerDetails> {
+        let db = self.pool.get().await?;
+        let row = db
+            .query_one(
+                "
+                select
+                    e.company,
+                    e.description,
+                    e.logo_url,
+                    e.website_url,
+                    l.city,
+                    l.country,
+                    l.state
+                from employer e
+                left join location l using (location_id)
+                where employer_id = $1::uuid;
+                ",
+                &[&employer_id],
+            )
+            .await?;
+        let employer_details = EmployerDetails {
+            company: row.get("company"),
+            description: row.get("description"),
+            city: row.get("city"),
+            country: row.get("country"),
+            logo_url: row.get("logo_url"),
+            state: row.get("state"),
+            website_url: row.get("website_url"),
+        };
+
+        Ok(employer_details)
     }
 
     /// [DBDashBoard::get_job_board]

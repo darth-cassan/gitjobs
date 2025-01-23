@@ -25,6 +25,14 @@ pub(crate) struct ListPage {
     pub jobs: Vec<JobSummary>,
 }
 
+/// Job preview page template.
+#[derive(Debug, Clone, Template, Serialize, Deserialize)]
+#[template(path = "dashboard/jobs/preview.html")]
+pub(crate) struct PreviewPage {
+    pub employer_details: EmployerDetails,
+    pub job_details: JobDetails,
+}
+
 /// Update job page template.
 #[derive(Debug, Clone, Template, Serialize, Deserialize)]
 #[template(path = "dashboard/jobs/update.html")]
@@ -174,6 +182,20 @@ impl std::str::FromStr for Workplace {
             _ => Err("invalid workplace".to_string()),
         }
     }
+}
+
+/// Employer details.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub(crate) struct EmployerDetails {
+    pub company: String,
+    pub description: String,
+
+    pub city: Option<String>,
+    pub country: Option<String>,
+    pub logo_url: Option<String>,
+    pub state: Option<String>,
+    pub website_url: Option<String>,
 }
 
 /// Job board.

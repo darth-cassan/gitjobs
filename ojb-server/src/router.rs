@@ -8,7 +8,7 @@ use axum::{
         HeaderValue, StatusCode, Uri,
     },
     response::IntoResponse,
-    routing::{delete, get, put},
+    routing::{delete, get, post, put},
     Router,
 };
 use rust_embed::Embed;
@@ -53,6 +53,7 @@ pub(crate) fn setup(cfg: &HttpServerConfig, db: DynDB) -> Router {
         .route("/dashboard", get(dashboard::home::page))
         .route("/dashboard/jobs/list", get(dashboard::jobs::list_page))
         .route("/dashboard/jobs/add", get(dashboard::jobs::add_page).post(dashboard::jobs::add))
+        .route("/dashboard/jobs/preview", post(dashboard::jobs::preview_page))
         .route("/dashboard/jobs/{:job_id}/archive", put(dashboard::jobs::archive))
         .route("/dashboard/jobs/{:job_id}/delete", delete(dashboard::jobs::delete))
         .route("/dashboard/jobs/{:job_id}/publish", put(dashboard::jobs::publish))

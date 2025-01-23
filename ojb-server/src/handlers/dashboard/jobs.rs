@@ -46,7 +46,23 @@ pub(crate) async fn list_page(
     let jobs = db.list_employer_jobs(employer_id).await?;
     let template = jobs::ListPage { jobs };
 
-    Ok((StatusCode::OK, Html(template.render()?)))
+    Ok(Html(template.render()?))
+}
+
+/// Handler that returns the job preview page.
+#[instrument(skip_all, err)]
+pub(crate) async fn preview_page(
+    State(db): State<DynDB>,
+    EmployerId(employer_id): EmployerId,
+    Form(job_details): Form<jobs::JobDetails>,
+) -> Result<impl IntoResponse, HandlerError> {
+    let employer_details = db.get_employer_details(employer_id).await?;
+    let template = jobs::PreviewPage {
+        employer_details,
+        job_details,
+    };
+
+    Ok(Html(template.render()?))
 }
 
 /// Handler that returns the page to update a job.
