@@ -28,7 +28,7 @@ pub(crate) async fn add_page(
     State(db): State<DynDB>,
     JobBoardId(job_board_id): JobBoardId,
 ) -> Result<impl IntoResponse, HandlerError> {
-    let job_board = db.get_job_board(job_board_id).await?;
+    let job_board = db.get_job_board(&job_board_id).await?;
     let template = jobs::AddPage {
         benefits: job_board.benefits,
         skills: job_board.skills,
@@ -43,7 +43,7 @@ pub(crate) async fn list_page(
     State(db): State<DynDB>,
     EmployerId(employer_id): EmployerId,
 ) -> Result<impl IntoResponse, HandlerError> {
-    let jobs = db.list_employer_jobs(employer_id).await?;
+    let jobs = db.list_employer_jobs(&employer_id).await?;
     let template = jobs::ListPage { jobs };
 
     Ok(Html(template.render()?))
@@ -56,7 +56,7 @@ pub(crate) async fn preview_page(
     EmployerId(employer_id): EmployerId,
     Form(job_details): Form<jobs::JobDetails>,
 ) -> Result<impl IntoResponse, HandlerError> {
-    let employer_details = db.get_employer_details(employer_id).await?;
+    let employer_details = db.get_employer_details(&employer_id).await?;
     let template = jobs::PreviewPage {
         employer_details,
         job_details,
@@ -73,7 +73,7 @@ pub(crate) async fn update_page(
     JobBoardId(job_board_id): JobBoardId,
 ) -> Result<impl IntoResponse, HandlerError> {
     let (job_board, job_details) =
-        tokio::try_join!(db.get_job_board(job_board_id), db.get_job_details(job_id),)?;
+        tokio::try_join!(db.get_job_board(&job_board_id), db.get_job_details(&job_id),)?;
 
     let template = jobs::UpdatePage {
         benefits: job_board.benefits,
@@ -93,7 +93,7 @@ pub(crate) async fn add(
     EmployerId(employer_id): EmployerId,
     Form(job_details): Form<jobs::JobDetails>,
 ) -> Result<impl IntoResponse, HandlerError> {
-    db.add_job(employer_id, job_details).await?;
+    db.add_job(&employer_id, &job_details).await?;
 
     Ok((StatusCode::CREATED, [("HX-Push-Url", "/dashboard/jobs/list")]))
 }
@@ -104,7 +104,7 @@ pub(crate) async fn archive(
     State(db): State<DynDB>,
     Path(job_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, HandlerError> {
-    db.archive_job(job_id).await?;
+    db.archive_job(&job_id).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }
@@ -115,7 +115,7 @@ pub(crate) async fn delete(
     State(db): State<DynDB>,
     Path(job_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, HandlerError> {
-    db.delete_job(job_id).await?;
+    db.delete_job(&job_id).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }
@@ -126,7 +126,7 @@ pub(crate) async fn publish(
     State(db): State<DynDB>,
     Path(job_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, HandlerError> {
-    db.publish_job(job_id).await?;
+    db.publish_job(&job_id).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }
@@ -138,7 +138,7 @@ pub(crate) async fn update(
     Path(job_id): Path<Uuid>,
     Form(job_details): Form<jobs::JobDetails>,
 ) -> Result<impl IntoResponse, HandlerError> {
-    db.update_job(job_id, job_details).await?;
+    db.update_job(&job_id, &job_details).await?;
 
     Ok((StatusCode::NO_CONTENT, [("HX-Push-Url", "/dashboard/jobs/list")]))
 }

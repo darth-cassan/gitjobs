@@ -29,10 +29,13 @@ pub(crate) async fn page(
     let tab: Tab = query.get("tab").into();
     let content = match tab {
         Tab::Jobs => {
-            let jobs = db.list_employer_jobs(employer_id).await?;
+            let jobs = db.list_employer_jobs(&employer_id).await?;
             Content::Jobs(jobs::ListPage { jobs })
         }
-        Tab::Settings => Content::Settings(settings::Page {}),
+        Tab::Settings => {
+            let employer_details = db.get_employer_details(&employer_id).await?;
+            Content::Settings(settings::UpdateEmployerPage { employer_details })
+        }
     };
     let template = home::Page { content };
 

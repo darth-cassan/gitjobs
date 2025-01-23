@@ -58,7 +58,7 @@ pub(crate) fn setup(cfg: &HttpServerConfig, db: DynDB) -> Router {
         .route("/dashboard/jobs/{:job_id}/delete", delete(dashboard::jobs::delete))
         .route("/dashboard/jobs/{:job_id}/publish", put(dashboard::jobs::publish))
         .route("/dashboard/jobs/{:job_id}/update", get(dashboard::jobs::update_page).put(dashboard::jobs::update))
-        .route("/dashboard/settings", get(dashboard::settings::page))
+        .route("/dashboard/settings/employer", get(dashboard::settings::update_employer_page).put(dashboard::settings::update_employer))
         .route("/locations/search", get(common::search_locations))
         .route("/health-check", get(health_check))
         .route("/static/{*file}", get(static_handler))

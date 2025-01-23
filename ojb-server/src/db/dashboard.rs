@@ -4,7 +4,10 @@ use anyhow::Result;
 use async_trait::async_trait;
 use tracing::instrument;
 
-use crate::templates::dashboard::jobs::{EmployerDetails, JobBoard, JobDetails, JobSummary};
+use crate::templates::dashboard::{
+    jobs::{JobBoard, JobDetails, JobSummary},
+    settings::EmployerDetails,
+};
 
 use super::PgDB;
 
@@ -12,38 +15,41 @@ use super::PgDB;
 #[async_trait]
 pub(crate) trait DBDashBoard {
     /// Add job to the job board.
-    async fn add_job(&self, employer_id: uuid::Uuid, job: JobDetails) -> Result<()>;
+    async fn add_job(&self, employer_id: &uuid::Uuid, job: &JobDetails) -> Result<()>;
 
     /// Archive job.
-    async fn archive_job(&self, job_id: uuid::Uuid) -> Result<()>;
+    async fn archive_job(&self, job_id: &uuid::Uuid) -> Result<()>;
 
     /// Delete job.
-    async fn delete_job(&self, job_id: uuid::Uuid) -> Result<()>;
+    async fn delete_job(&self, job_id: &uuid::Uuid) -> Result<()>;
 
     /// Get employer details.
-    async fn get_employer_details(&self, employer_id: uuid::Uuid) -> Result<EmployerDetails>;
+    async fn get_employer_details(&self, employer_id: &uuid::Uuid) -> Result<EmployerDetails>;
 
     /// Get job board.
-    async fn get_job_board(&self, job_board_id: uuid::Uuid) -> Result<JobBoard>;
+    async fn get_job_board(&self, job_board_id: &uuid::Uuid) -> Result<JobBoard>;
 
     /// Get job details.
-    async fn get_job_details(&self, job_id: uuid::Uuid) -> Result<JobDetails>;
+    async fn get_job_details(&self, job_id: &uuid::Uuid) -> Result<JobDetails>;
 
     /// List employer jobs.
-    async fn list_employer_jobs(&self, employer_id: uuid::Uuid) -> Result<Vec<JobSummary>>;
+    async fn list_employer_jobs(&self, employer_id: &uuid::Uuid) -> Result<Vec<JobSummary>>;
 
     /// Publish job.
-    async fn publish_job(&self, job_id: uuid::Uuid) -> Result<()>;
+    async fn publish_job(&self, job_id: &uuid::Uuid) -> Result<()>;
+
+    /// Update employer.
+    async fn update_employer(&self, employer_id: &uuid::Uuid, employer: &EmployerDetails) -> Result<()>;
 
     /// Update job.
-    async fn update_job(&self, job_id: uuid::Uuid, job: JobDetails) -> Result<()>;
+    async fn update_job(&self, job_id: &uuid::Uuid, job: &JobDetails) -> Result<()>;
 }
 
 #[async_trait]
 impl DBDashBoard for PgDB {
     /// [DBDashBoard::add_job]
     #[instrument(skip(self), err)]
-    async fn add_job(&self, employer_id: uuid::Uuid, job: JobDetails) -> Result<()> {
+    async fn add_job(&self, employer_id: &uuid::Uuid, job: &JobDetails) -> Result<()> {
         let db = self.pool.get().await?;
         db.execute(
             "
@@ -117,7 +123,7 @@ impl DBDashBoard for PgDB {
 
     /// [DBDashBoard::archive_job]
     #[instrument(skip(self), err)]
-    async fn archive_job(&self, job_id: uuid::Uuid) -> Result<()> {
+    async fn archive_job(&self, job_id: &uuid::Uuid) -> Result<()> {
         let db = self.pool.get().await?;
         db.execute(
             "
@@ -138,7 +144,7 @@ impl DBDashBoard for PgDB {
 
     /// [DBDashBoard::delete_job]
     #[instrument(skip(self), err)]
-    async fn delete_job(&self, job_id: uuid::Uuid) -> Result<()> {
+    async fn delete_job(&self, job_id: &uuid::Uuid) -> Result<()> {
         let db = self.pool.get().await?;
         db.execute("delete from job where job_id = $1::uuid;", &[&job_id])
             .await?;
@@ -148,7 +154,7 @@ impl DBDashBoard for PgDB {
 
     /// [DBDashBoard::get_employer_details]
     #[instrument(skip(self), err)]
-    async fn get_employer_details(&self, employer_id: uuid::Uuid) -> Result<EmployerDetails> {
+    async fn get_employer_details(&self, employer_id: &uuid::Uuid) -> Result<EmployerDetails> {
         let db = self.pool.get().await?;
         let row = db
             .query_one(
@@ -156,6 +162,8 @@ impl DBDashBoard for PgDB {
                 select
                     e.company,
                     e.description,
+                    e.public,
+                    e.location_id,
                     e.logo_url,
                     e.website_url,
                     l.city,
@@ -171,8 +179,10 @@ impl DBDashBoard for PgDB {
         let employer_details = EmployerDetails {
             company: row.get("company"),
             description: row.get("description"),
+            public: row.get("public"),
             city: row.get("city"),
             country: row.get("country"),
+            location_id: row.get("location_id"),
             logo_url: row.get("logo_url"),
             state: row.get("state"),
             website_url: row.get("website_url"),
@@ -183,7 +193,7 @@ impl DBDashBoard for PgDB {
 
     /// [DBDashBoard::get_job_board]
     #[instrument(skip(self), err)]
-    async fn get_job_board(&self, job_board_id: uuid::Uuid) -> Result<JobBoard> {
+    async fn get_job_board(&self, job_board_id: &uuid::Uuid) -> Result<JobBoard> {
         let db = self.pool.get().await?;
         let row = db
             .query_one(
@@ -207,7 +217,7 @@ impl DBDashBoard for PgDB {
 
     /// [DBDashBoard::get_job_details]
     #[instrument(skip(self), err)]
-    async fn get_job_details(&self, job_id: uuid::Uuid) -> Result<JobDetails> {
+    async fn get_job_details(&self, job_id: &uuid::Uuid) -> Result<JobDetails> {
         let db = self.pool.get().await?;
         let row = db
             .query_one(
@@ -268,7 +278,7 @@ impl DBDashBoard for PgDB {
 
     /// [DBDashBoard::list_employer_jobs]
     #[instrument(skip(self), err)]
-    async fn list_employer_jobs(&self, employer_id: uuid::Uuid) -> Result<Vec<JobSummary>> {
+    async fn list_employer_jobs(&self, employer_id: &uuid::Uuid) -> Result<Vec<JobSummary>> {
         let db = self.pool.get().await?;
         let jobs = db
             .query(
@@ -308,7 +318,7 @@ impl DBDashBoard for PgDB {
 
     /// [DBDashBoard::publish_job]
     #[instrument(skip(self), err)]
-    async fn publish_job(&self, job_id: uuid::Uuid) -> Result<()> {
+    async fn publish_job(&self, job_id: &uuid::Uuid) -> Result<()> {
         let db = self.pool.get().await?;
         db.execute(
             "
@@ -328,9 +338,41 @@ impl DBDashBoard for PgDB {
         Ok(())
     }
 
+    /// [DBDashBoard::update_employer]
+    #[instrument(skip(self), err)]
+    async fn update_employer(&self, employer_id: &uuid::Uuid, employer: &EmployerDetails) -> Result<()> {
+        let db = self.pool.get().await?;
+        db.execute(
+            "
+            update employer
+            set
+                company = $2::text,
+                description = $3::text,
+                public = $4::bool,
+                location_id = $5::uuid,
+                logo_url = $6::text,
+                website_url = $7::text,
+                updated_at = current_timestamp
+            where employer_id = $1::uuid;
+            ",
+            &[
+                &employer_id,
+                &employer.company,
+                &employer.description,
+                &employer.public,
+                &employer.location_id,
+                &employer.logo_url,
+                &employer.website_url,
+            ],
+        )
+        .await?;
+
+        Ok(())
+    }
+
     /// [DBDashBoard::update_job]
     #[instrument(skip(self), err)]
-    async fn update_job(&self, job_id: uuid::Uuid, job: JobDetails) -> Result<()> {
+    async fn update_job(&self, job_id: &uuid::Uuid, job: &JobDetails) -> Result<()> {
         let db = self.pool.get().await?;
         db.execute(
             "

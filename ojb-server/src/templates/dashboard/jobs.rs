@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use crate::templates::{filters, helpers::DATE_FORMAT};
 
-// Pages templates.
+use super::settings::EmployerDetails;
 
 /// Add job page template.
 #[derive(Debug, Clone, Template, Serialize, Deserialize)]
@@ -182,20 +182,6 @@ impl std::str::FromStr for Workplace {
             _ => Err("invalid workplace".to_string()),
         }
     }
-}
-
-/// Employer details.
-#[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct EmployerDetails {
-    pub company: String,
-    pub description: String,
-
-    pub city: Option<String>,
-    pub country: Option<String>,
-    pub logo_url: Option<String>,
-    pub state: Option<String>,
-    pub website_url: Option<String>,
 }
 
 /// Job board.

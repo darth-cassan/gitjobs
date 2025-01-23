@@ -16,7 +16,7 @@ pub(crate) struct Page {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) enum Content {
     Jobs(jobs::ListPage),
-    Settings(settings::Page),
+    Settings(settings::UpdateEmployerPage),
 }
 
 impl Content {
