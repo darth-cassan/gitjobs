@@ -3,6 +3,7 @@
 use chrono::{DateTime, Utc};
 use rinja::Template;
 use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 use uuid::Uuid;
 
 use crate::templates::{filters, helpers::DATE_FORMAT};
@@ -34,6 +35,7 @@ pub(crate) struct UpdatePage {
 }
 
 /// Job summary.
+#[skip_serializing_none]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub(crate) struct JobSummary {
     pub job_id: uuid::Uuid,
@@ -48,8 +50,8 @@ pub(crate) struct JobSummary {
 }
 
 /// Job details.
+#[skip_serializing_none]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[allow(clippy::struct_field_names)]
 pub(crate) struct JobDetails {
     pub description: String,
     pub status: JobStatus,
