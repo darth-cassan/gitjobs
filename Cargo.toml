@@ -14,6 +14,7 @@ rust-version = "1.84"
 anyhow = "1.0.95"
 async-trait = "0.1.85"
 axum = { version = "0.8.1", features = ["macros"] }
+axum-extra = { version = "0.10.0", features = ["form"] }
 cached = { version = "0.54.0", features = ["async"] }
 clap = { version = "4.5.26", features = ["derive"] }
 chrono = { version = "0.4.39", features = ["serde"] }

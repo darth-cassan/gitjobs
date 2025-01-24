@@ -5,8 +5,8 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
     response::{Html, IntoResponse},
-    Form,
 };
+use axum_extra::extract::Form;
 use rinja::Template;
 use tracing::instrument;
 use uuid::Uuid;
