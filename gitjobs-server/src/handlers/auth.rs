@@ -19,12 +19,13 @@ use uuid::Uuid;
 
 use crate::{
     auth::{self, AuthSession, Credentials, OAuth2Credentials, OAuth2Provider, PasswordCredentials},
+    config::HttpServerConfig,
     db::DynDB,
     handlers::{
         error::HandlerError,
         extractors::{JobBoardId, OAuth2},
     },
-    notifications::{DynNotificationsManager, Notification, NotificationKind},
+    notifications::{DynNotificationsManager, NewNotification, NotificationKind},
     templates::{self, PageId, notifications::EmailVerification},
 };
 
@@ -232,6 +233,7 @@ pub(crate) async fn oauth2_redirect(
 #[instrument(skip_all)]
 pub(crate) async fn sign_up(
     messages: Messages,
+    State(cfg): State<HttpServerConfig>,
     State(db): State<DynDB>,
     State(notifications_manager): State<DynNotificationsManager>,
     JobBoardId(job_board_id): JobBoardId,
@@ -257,9 +259,12 @@ pub(crate) async fn sign_up(
     // Enqueue email verification notification
     if let Some(code) = email_verification_code {
         let template_data = EmailVerification {
-            link: format!("/verify-email/{code}"),
+            link: format!(
+                "{}/verify-email/{code}",
+                cfg.base_url.strip_suffix('/').unwrap_or(&cfg.base_url)
+            ),
         };
-        let notification = Notification {
+        let notification = NewNotification {
             kind: NotificationKind::EmailVerification,
             user_id: user.user_id,
             template_data: Some(serde_json::to_value(&template_data)?),

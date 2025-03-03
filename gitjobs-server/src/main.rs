@@ -6,9 +6,13 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use deadpool_postgres::Runtime;
 use img::db::DbImageStore;
+use notifications::PgNotificationsManager;
 use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
 use postgres_openssl::MakeTlsConnector;
+use std::env;
 use tokio::{net::TcpListener, signal};
+use tokio_util::sync::CancellationToken;
+use tokio_util::task::TaskTracker;
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
 
@@ -54,21 +58,35 @@ async fn main() -> Result<()> {
         LogFormat::Pretty => ts.init(),
     };
 
+    // Setup task tracker and cancellation token
+    let tracker = TaskTracker::new();
+    let cancellation_token = CancellationToken::new();
+
     // Setup database
     let mut builder = SslConnector::builder(SslMethod::tls())?;
     builder.set_verify(SslVerifyMode::NONE);
     let connector = MakeTlsConnector::new(builder.build());
     let pool = cfg.db.create_pool(Some(Runtime::Tokio1), connector)?;
     let db = Arc::new(PgDB::new(pool));
+    {
+        let db = db.clone();
+        let cancellation_token = cancellation_token.clone();
+        tracker.spawn(async move {
+            db.tx_cleaner(cancellation_token).await;
+        });
+    }
 
     // Setup image store
     let image_store = Arc::new(DbImageStore::new(db.clone()));
 
-    // Setup notifications manager
-    let notifications_manager = Arc::new(notifications::PgNotificationsManager::new(db.clone()));
+    // Setup and launch notifications manager
+    let notifications_manager = Arc::new(
+        PgNotificationsManager::new(db.clone(), cfg.email, tracker.clone(), cancellation_token.clone())
+            .await?,
+    );
 
     // Setup and launch HTTP server
-    let router = router::setup(&cfg.server, db, image_store, notifications_manager)?;
+    let router = router::setup(cfg.server.clone(), db, image_store, notifications_manager)?;
     let listener = TcpListener::bind(&cfg.server.addr).await?;
     info!("server started");
     info!(%cfg.server.addr, "listening");
@@ -80,6 +98,11 @@ async fn main() -> Result<()> {
         return Err(err.into());
     }
     info!("server stopped");
+
+    // Ask all tasks to stop and wait for them to finish
+    tracker.close();
+    cancellation_token.cancel();
+    tracker.wait().await;
 
     Ok(())
 }

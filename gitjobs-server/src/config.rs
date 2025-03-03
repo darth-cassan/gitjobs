@@ -17,6 +17,7 @@ use crate::auth::OAuth2Provider;
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Config {
     pub db: DbConfig,
+    pub email: EmailConfig,
     pub log: LogConfig,
     pub server: HttpServerConfig,
 }
@@ -40,10 +41,28 @@ impl Config {
     }
 }
 
+/// Email configuration.
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+pub(crate) struct EmailConfig {
+    pub from_address: String,
+    pub from_name: String,
+    pub smtp: SmtpConfig,
+}
+
+/// SMTP configuration.
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+pub(crate) struct SmtpConfig {
+    pub host: String,
+    pub port: u16,
+    pub username: String,
+    pub password: String,
+}
+
 /// Http server configuration.
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub(crate) struct HttpServerConfig {
     pub addr: String,
+    pub base_url: String,
     pub basic_auth: Option<BasicAuth>,
     pub cookie: Option<CookieConfig>,
     pub oauth2: OAuth2Config,
