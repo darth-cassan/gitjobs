@@ -96,12 +96,13 @@ pub(crate) fn setup(
             login_url = LOG_IN_URL,
             redirect_field = "next_url"
         ))
-        .route("/", get(jobboard::jobs::page))
+        .route("/", get(jobboard::home::page))
         .route("/about", get(jobboard::about::page))
         .route("/health-check", get(health_check))
-        .route("/jobs", get(jobboard::jobs::page))
-        .route("/jobs/explore-section", get(jobboard::jobs::explore_section))
-        .route("/jobs/results-section", get(jobboard::jobs::results_section))
+        .route("/jobs", get(jobboard::jobs::jobs_page))
+        .route("/jobs/{job_id}", get(jobboard::jobs::job_page))
+        .route("/jobs/section/explore", get(jobboard::jobs::explore_section))
+        .route("/jobs/section/results", get(jobboard::jobs::results_section))
         .route("/log-in", get(auth::log_in_page).post(auth::log_in))
         .route("/log-in/oauth2/{provider}", get(auth::oauth2_redirect))
         .route("/log-in/oauth2/{provider}/callback", get(auth::oauth2_callback))

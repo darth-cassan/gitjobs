@@ -35,7 +35,7 @@ pub(crate) trait DBDashBoardEmployer {
     async fn get_job_board(&self, job_board_id: &Uuid) -> Result<JobBoard>;
 
     /// Get job.
-    async fn get_job(&self, job_id: &Uuid) -> Result<Job>;
+    async fn get_job_dashboard(&self, job_id: &Uuid) -> Result<Job>;
 
     /// List employer jobs.
     async fn list_employer_jobs(&self, employer_id: &Uuid) -> Result<Vec<JobSummary>>;
@@ -179,7 +179,7 @@ impl DBDashBoardEmployer for PgDB {
                 ",
                 &[
                     &employer_id,
-                    &job.type_.to_string(),
+                    &job.kind.to_string(),
                     &job.status.to_string(),
                     &job.location.as_ref().map(|l| l.location_id),
                     &job.workplace.to_string(),
@@ -334,9 +334,9 @@ impl DBDashBoardEmployer for PgDB {
         Ok(job_board)
     }
 
-    /// [DBDashBoardEmployer::get_job]
+    /// [DBDashBoardEmployer::get_job_dashboard]
     #[instrument(skip(self), err)]
-    async fn get_job(&self, job_id: &Uuid) -> Result<Job> {
+    async fn get_job_dashboard(&self, job_id: &Uuid) -> Result<Job> {
         let db = self.pool.get().await?;
         let row = db
             .query_one(
@@ -345,7 +345,7 @@ impl DBDashBoardEmployer for PgDB {
                     j.description,
                     j.status,
                     j.title,
-                    j.type,
+                    j.kind,
                     j.workplace,
                     j.apply_instructions,
                     j.apply_url,
@@ -391,11 +391,12 @@ impl DBDashBoardEmployer for PgDB {
                 &[&job_id],
             )
             .await?;
+
         let job = Job {
             description: row.get("description"),
             status: row.get::<_, String>("status").parse().expect("valid job status"),
             title: row.get("title"),
-            type_: row.get::<_, String>("type").parse().expect("valid job type"),
+            kind: row.get::<_, String>("kind").parse().expect("valid job kind"),
             workplace: row.get::<_, String>("workplace").parse().expect("valid workplace"),
             apply_instructions: row.get("apply_instructions"),
             apply_url: row.get("apply_url"),
@@ -583,7 +584,7 @@ impl DBDashBoardEmployer for PgDB {
             ",
             &[
                 &job_id,
-                &job.type_.to_string(),
+                &job.kind.to_string(),
                 &job.status.to_string(),
                 &job.location.as_ref().map(|l| l.location_id),
                 &job.workplace.to_string(),
