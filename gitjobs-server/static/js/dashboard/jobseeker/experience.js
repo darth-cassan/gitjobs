@@ -1,7 +1,8 @@
-import { LitElement, html, repeat } from "https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js";
+import { html, repeat } from "https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js";
 import { isObjectEmpty } from "/static/js/common/common.js";
+import { LitWrapper } from "/static/js/common/litWrapper.js";
 
-export class ExperienceSection extends LitElement {
+export class ExperienceSection extends LitWrapper {
   static properties = {
     experience: { type: Array },
   };
@@ -14,11 +15,6 @@ export class ExperienceSection extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this._addId();
-  }
-
-  createRenderRoot() {
-    // Disable shadow dom to use Tailwind CSS
-    return this;
   }
 
   _addId() {
@@ -132,7 +128,7 @@ export class ExperienceSection extends LitElement {
 }
 customElements.define("experience-section", ExperienceSection);
 
-class ExperienceRecord extends LitElement {
+class ExperienceRecord extends LitWrapper {
   static properties = {
     data: { type: Object },
     index: { type: Number },
@@ -153,11 +149,6 @@ class ExperienceRecord extends LitElement {
     this.index = 0;
     this.isObjectEmpty = true;
     this.onDataChange = () => {};
-  }
-
-  createRenderRoot() {
-    // Disable shadow dom to use Tailwind CSS
-    return this;
   }
 
   connectedCallback() {

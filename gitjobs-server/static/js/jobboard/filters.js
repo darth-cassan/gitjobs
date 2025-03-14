@@ -1,0 +1,115 @@
+// Open filters view (only for mobile).
+export const open = () => {
+  const drawer = document.getElementById("drawer-filters");
+  drawer.classList.add("transition-transform");
+  drawer.classList.remove("-translate-x-full");
+  drawer.dataset.open = "true";
+  const backdrop = document.getElementById("drawer-backdrop");
+  backdrop.classList.remove("hidden");
+};
+
+// Close filters view (only for mobile).
+export const close = () => {
+  const drawer = document.getElementById("drawer-filters");
+  drawer.classList.add("-translate-x-full");
+  drawer.classList.remove("transition-transform");
+  drawer.dataset.open = "false";
+  const backdrop = document.getElementById("drawer-backdrop");
+  backdrop.classList.add("hidden");
+};
+
+// Trigger change on the form provided.
+export const triggerChangeOnForm = (formId, fromSearch) => {
+  // Prevent form submission if the search input is empty, and it is triggered
+  // from the search input
+  if (fromSearch) {
+    const input = document.getElementById("ts_query");
+    if (input.value === "") {
+      return;
+    }
+  }
+
+  const form = document.getElementById(formId);
+  if (form) {
+    htmx.trigger(form, "change");
+  }
+};
+
+// Search on enter key press.
+export const searchOnEnter = (e, formId) => {
+  if (e.key === "Enter") {
+    if (formId) {
+      triggerChangeOnForm(formId);
+    } else {
+      const value = e.currentTarget.value;
+      if (value !== "") {
+        document.location.href = `/jobs?ts_query=${value}`;
+      }
+    }
+    e.currentTarget.blur();
+  }
+};
+
+// Clean input field and trigger change on form.
+export const cleanInputField = (id, formId) => {
+  const input = document.getElementById(id);
+  input.value = "";
+
+  if (formId) {
+    triggerChangeOnForm(formId);
+  }
+};
+
+// Reset form.
+export const resetForm = async (formId) => {
+  const form = document.getElementById(formId);
+  if (form) {
+    // Clean selects
+    form.querySelectorAll("select").forEach((el) => {
+      if (el.name === "date_range") {
+        el.value = "last30-days";
+      } else {
+        el.value = "";
+      }
+    });
+
+    // Clean radio/checkbox input fields
+    form.querySelectorAll("input[type=checkbox]").forEach((el) => (el.checked = false));
+    form.querySelectorAll("input[type=radio]").forEach((el) => (el.checked = false));
+    form.querySelectorAll("input[type=range]").forEach((el) => {
+      el.value = 0;
+      el.style = "";
+      // Reset tooltip style
+      const tooltip = el.nextElementSibling;
+      tooltip.style = "";
+      // Reset tooltip content
+      const contentTooltip = tooltip.getElementsByTagName("span")[0];
+      contentTooltip.textContent = 0;
+    });
+
+    // Clean text input fields
+    form.querySelectorAll("input[type=text]").forEach((el) => (el.value = ""));
+    form.querySelectorAll("input[type=hidden]").forEach((el) => (el.value = ""));
+
+    // Clean selected options in collapsible filters
+    const searchableFilters = form.getElementsByTagName("searchable-filter");
+    for (let i = 0; i < searchableFilters.length; i++) {
+      await searchableFilters[i].cleanSelected();
+    }
+
+    // Clean ts_query input field
+    const input = document.getElementById("ts_query");
+    if (input) {
+      input.value = "";
+    }
+
+    // Trigger change on form
+    triggerChangeOnForm(formId);
+  }
+};
+
+// Update results on DOM with the given content.
+export const updateResults = (content) => {
+  const results = document.getElementById("results");
+  results.innerHTML = content;
+};

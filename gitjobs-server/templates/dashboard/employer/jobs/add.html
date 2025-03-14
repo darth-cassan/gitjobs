@@ -103,6 +103,25 @@
         </div>
         {# End Job Description #}
 
+        {# Seniority #}
+        <div class="col-span-full lg:col-span-2">
+          <label for="seniority" class="form-label">Seniority level</label>
+          <div class="mt-2 grid grid-cols-1">
+            <select id="seniority" name="seniority" class="select-primary">
+              {% call macros::select_option(value = "", label = "") %}
+              {% call macros::select_option(value = "entry", label = "Entry") %}
+              {% call macros::select_option(value = "junior", label = "Junior") %}
+              {% call macros::select_option(value = "mid", label = "Mid-level") %}
+              {% call macros::select_option(value = "senior", label = "Senior") %}
+              {% call macros::select_option(value = "lead", label = "Lead") %}
+            </select>
+          </div>
+          <p class="form-legend">Experience level required for the position.</p>
+        </div>
+
+        <div class="hidden lg:flex lg:col-span-4"></div>
+        {# End Seniority #}
+
         {# Job responsibilities #}
         <div class="col-span-full">
           <label for="responsibilities" class="form-label">Responsibilities</label>
@@ -235,10 +254,6 @@
             <select id="salary_currency" name="salary_currency" class="select-primary">
               {% call macros::select_option(value = "", label = "") %}
               {% call macros::select_option(value = "USD", label = "USD - United States Dollar") %}
-              {% call macros::select_option(value = "EUR", label = "EUR - Euro") %}
-              {% call macros::select_option(value = "GBP", label = "GBP - British Pound Sterling") %}
-              {% call macros::select_option(value = "CAD", label = "CAD - Canadian Dollar") %}
-              {% call macros::select_option(value = "JPY", label = "JPY - Japanese Yen") %}
             </select>
           </div>
         </div>
@@ -250,13 +265,7 @@
           <div class="mt-2 grid grid-cols-1">
             <select id="salary_period" name="salary_period" class="select-primary">
               {% call macros::select_option(value = "", label = "") %}
-              {% call macros::select_option(value = "hourly", label = "Hourly") %}
-              {% call macros::select_option(value = "daily", label = "Daily") %}
-              {% call macros::select_option(value = "weekly", label = "Weekly") %}
-              {% call macros::select_option(value = "fortnightly", label = "Fortnightly") %}
-              {% call macros::select_option(value = "monthly", label = "Monthly") %}
-              {% call macros::select_option(value = "quarterly", label = "Quarterly") %}
-              {% call macros::select_option(value = "yearly", label = "Yearly") %}
+              {% call macros::select_option(value = "annual", label = "Annual") %}
             </select>
           </div>
         </div>
@@ -279,7 +288,9 @@
         {# Open source #}
         <div class="col-span-full lg:col-span-3">
           <label for="open_source" class="form-label">Open source</label>
-          <div class="mt-2 me-8">{% call macros::input_range(name = "open_source") %}</div>
+          <div class="mt-2 me-8">
+            <input-range name="open_source">
+          </div>
           <p class="form-legend">Percentage of time working on open source projects.</p>
         </div>
         {# End Open source #}
@@ -287,7 +298,11 @@
         {# Upstream commitment #}
         <div class="col-span-full lg:col-span-3">
           <label for="upstream_commitment" class="form-label">Upstream commitment</label>
-          <div class="mt-2 me-8">{% call macros::input_range(name = "upstream_commitment") %}</div>
+          <div class="mt-2 me-8">
+            <div class="mt-2 me-8">
+              <input-range name="upstream_commitment">
+            </div>
+          </div>
           <p class="form-legend">
             Percentage of time working on upstream open source projects the company depends on.
           </p>
@@ -301,7 +316,9 @@
           <p class="form-legend">
             If the job position involves contributing to any CNCF projects, please list them here.
           </p>
-          <div id="selected-projects" class="flex space-x-5"></div>
+        </div>
+        <div class="col-span-full -mt-4">
+          <div id="selected-projects" class="flex flex-wrap gap-5 w-full"></div>
         </div>
         {# End projects #}
       </div>

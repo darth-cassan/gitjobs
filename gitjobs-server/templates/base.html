@@ -14,7 +14,7 @@
     {# TODO - primary color #}
     <style>
       :root {
-        --primary-color: #d62293;
+        --primary-color: #fd4d12;
       }
     </style>
 
@@ -39,6 +39,8 @@
     <script type="module" src="/static/js/dashboard/jobseeker/experience.js"></script>
     <script type="module" src="/static/js/dashboard/jobseeker/certifications.js"></script>
     <script type="module" src="/static/js/dashboard/jobseeker/projects.js"></script>
+    <script type="module" src="/static/js/common/searchable-filter.js"></script>
+    <script type="module" src="/static/js/common/input-range.js"></script>
     <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
     <script src=" https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.all.min.js "></script>
 
@@ -89,7 +91,7 @@
         }
 
         .btn-mini {
-          @apply text-xs/6 px-2 py-0;
+          @apply text-xs/6 py-0 px-3;
         }
 
         .input-primary {
@@ -102,6 +104,10 @@
 
         .radio-primary {
           @apply w-4 h-4 text-primary-600 border border-gray-200 bg-gray-50 cursor-pointer focus:ring-primary-500 focus:ring-2;
+        }
+
+        .checkbox-primary {
+          @apply w-4 h-4 rounded-sm text-primary-600 border border-gray-200 bg-gray-50 cursor-pointer focus:ring-primary-500 focus:ring-2;
         }
 
         .asterisk {
@@ -124,19 +130,18 @@
           extend: {
             colors: {
               primary: {
-                '50': '#fdf2fa',
-                '100': '#fce7f7',
-                '200': '#fbcff0',
-                '300': '#faa7e3',
-                '400': '#f571ce',
-                '500': '#ed47b7',
-                '600': '#d62293',
-                '700': '#bf177c',
-                '800': '#9e1666',
-                '900': '#841757',
-                '950': '#510632',
+                '50': '#fff4ed',
+                '100': '#ffe6d4',
+                '200': '#ffcaa9',
+                '300': '#ffa472',
+                '400': '#fe6728',
+                '500': '#fd4d12',
+                '600': '#ee3308',
+                '700': '#c52309',
+                '800': '#9c1d10',
+                '900': '#7e1b10',
+                '950': '#440906',
               },
-              base: '#fcfbfc',
             },
             fontSize: {
               filterTitle: '0.8rem',
@@ -154,11 +159,15 @@
         },
       };
 
+      // htmx extension to remove empty values from the parameters
       htmx.defineExtension("no-empty-vals", {
         encodeParameters: (xhr, parameters, elt) => {
-          // Remove empty values from the parameters
-          for (const key of [...parameters.keys()]) {
-            if (parameters.get(key).trim() === "") {
+          const currentParameters = new URLSearchParams(parameters);
+
+          for (const key of [...currentParameters.keys()]) {
+            const value = currentParameters.get(key).trim();
+            // Remove empty values or "0"
+            if (value === "" || value === "0") {
               parameters.delete(key);
             }
           }
@@ -169,28 +178,11 @@
       });
     </script>
   </head>
-  <body class="h-screen font-inter bg-base" hx-get hx-trigger="refresh-body">
-    {# Header #}
-    {% include "header.html" %}
-    {# End Header #}
-
-    {# View for small devices #}
-    <div class="flex md:hidden justify-center items-center w-full h-full">
-      <div class="fixed top-0 start-0 end-0 -z-10 block w-full h-full bg-jobboard"></div>
-      <div class="text-center bg-base border border-4 border-primary-600 border-dashed rounded-3xl text-2xl font-medium text-gray-800 p-10 m-10">
-        This site is not optimized yet for mobile devices
-      </div>
-    </div>
-    {# End view for small devices #}
-
-    {# Main Content #}
-    <div class="hidden md:flex min-h-screen">
-      {% if page_id == PageId::JobBoard %}
-        <div class="fixed top-[80px] start-0 end-0 -z-10 block w-full h-full bg-jobboard"></div>
-      {% endif %}
-      {% block main %}
-      {% endblock main %}
-    </div>
-    {# End Main Content #}
+  <body class="flex flex-col h-screen font-inter bg-gray-100"
+        hx-get
+        hx-trigger="refresh-body">
+    {# <div class="alert text-primary-800 bg-primary-50 border-b border-primary-500 text-sm/6 py-1 px-10 text-center" role="alert">This is a demo site. The jobs displayed are not real.</div> #}
+    {% block content %}
+    {% endblock content %}
   </body>
 </html>

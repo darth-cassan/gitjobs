@@ -9,7 +9,8 @@ use uuid::Uuid;
 use crate::templates::{
     PageId,
     dashboard::employer::jobs::{JobKind, SalaryKind, Workplace},
-    helpers::option_is_none_or_default,
+    filters,
+    helpers::{DATE_FORMAT, DATE_FORMAT_3, build_jobboard_image_url, option_is_none_or_default},
     misc::{Location, Member, Project},
     pagination::{NavigationLinks, Pagination},
 };
@@ -99,6 +100,14 @@ pub(crate) struct Filters {
     pub upstream_commitment: Option<usize>,
     #[serde(skip_serializing_if = "option_is_none_or_default")]
     pub workplace: Option<Vec<Workplace>>,
+}
+
+impl Filters {
+    /// Check if the filters are empty.
+    #[allow(dead_code)]
+    pub(crate) fn is_empty(&self) -> bool {
+        self == &Filters::default()
+    }
 }
 
 impl Pagination for Filters {

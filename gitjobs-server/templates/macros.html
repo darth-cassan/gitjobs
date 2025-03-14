@@ -27,22 +27,23 @@
 {# End button spinner #}
 
 {# Location -#}
-{% macro location(location_id = "", city = "", state = "", country = "", required = false) %}
+{% macro location(location_id = "", city = "", state = "", country = "", required = false, input_styles = "", clean_styles = "", icon = "", location_id_name = "location[location_id]", font_size_list = "sm") %}
   {% let value = &self::format_location(Some(city), Some(state), Some(country))|display_some %}
   <div class="mt-2 relative">
     <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
-      <div class="svg-icon size-4 icon-search bg-gray-300"></div>
+      <div class="{%- if !icon.is_empty() -%}{{ icon }}{%- else -%}svg-icon size-4 icon-search bg-gray-300{%- endif -%}">
+      </div>
     </div>
-    <input id="ts_query"
-           name="ts_query"
+    <input id="location"
+           name="ts_query_location"
            hx-get="/locations/search"
-           hx-include="#ts_query"
+           hx-params="ts_query_location"
            hx-trigger="searchLocations"
            hx-target="#search-location"
            hx-indicator="#location-spinner"
            type="text"
            value="{{ value }}"
-           class="input-primary peer ps-10"
+           class="input-primary peer px-10 {{ input_styles }}"
            placeholder="Search location"
            autocomplete="off"
            autocorrect="off"
@@ -50,7 +51,7 @@
            spellcheck="false"
            {% if required %}required{% endif %}>
     <input type="hidden"
-           name="location[location_id]"
+           name="{{ location_id_name }}"
            id="location_id"
            value="{{ location_id }}"
            data-location="{{ value }}"
@@ -62,12 +63,13 @@
            id="country"
            value="{{ country }}">
     <div id="location-spinner" class="hx-spinner absolute end-10 top-1">{% call spinner(size = 5) %}</div>
-    <div class="absolute end-1.5 top-1.5 peer-placeholder-shown:hidden">
+    <div class="absolute end-1.5 top-1.5 peer-placeholder-shown:hidden {{ clean_styles }}">
       <button id="clean-location" type="button" class="mt-[2px]">
         <div class="svg-icon size-5 bg-gray-400 hover:bg-gray-700 icon-close"></div>
       </button>
     </div>
-    <div id="search-location" class="absolute z-10 start-0 end-0"></div>
+    <div id="search-location"
+         class="absolute z-10 start-0 end-0 text-{{ font_size_list }}"></div>
   </div>
   <script type="module">
     import {
@@ -77,7 +79,7 @@
       debounce
     } from '/static/js/common/common.js';
 
-    const tsQueryInput = document.getElementById('ts_query');
+    const tsQueryInput = document.getElementById('location');
     const locationIdInput = document.getElementById('location_id');
     const locationCityInput = document.getElementById('city');
     const locationStateInput = document.getElementById('state');
@@ -87,7 +89,7 @@
 
     tsQueryInput.addEventListener('input', debounce(() => {
       if (tsQueryInput.value.length > 2) {
-        htmx.trigger('#ts_query', 'searchLocations');
+        htmx.trigger('#location', 'searchLocations');
       } else {
         document.getElementById('search-location').innerHTML = "";
       }
@@ -257,18 +259,18 @@
 {# End search member #}
 
 {# Search project #}
-{% macro search_project() %}
+{% macro search_project(id = "projects", mini = false) %}
   <div class="mt-2 relative">
     <div class="absolute top-2.5 start-0 flex items-center ps-3 pointer-events-none">
       <div class="svg-icon size-4 icon-search bg-gray-300"></div>
     </div>
-    <input id="project"
+    <input id="{{ id }}"
            name="name"
            hx-get="/projects/search"
-           hx-include="#project"
+           hx-include="#{{ id }}"
            hx-trigger="searchprojects"
-           hx-target="#search-project"
-           hx-indicator="#project-spinner"
+           hx-target="#search-{{ id }}"
+           hx-indicator="#{{ id }}-spinner"
            type="text"
            value=""
            class="input-primary peer ps-10"
@@ -278,13 +280,17 @@
            autocapitalize="off"
            spellcheck="false"
            autocomplete="off">
-    <div id="project-spinner" class="hx-spinner absolute end-10 top-1">{% call spinner(size = 5) %}</div>
+    <div id="{{ id }}-spinner" class="hx-spinner absolute end-10 top-1">{% call spinner(size = 5) %}</div>
     <div class="absolute end-1.5 top-1.5 peer-placeholder-shown:hidden">
-      <button id="clean-project" type="button" class="mt-[2px]">
+      <button id="clean-{{ id }}" type="button" class="mt-[2px]">
         <div class="svg-icon size-5 bg-gray-400 hover:bg-gray-700 icon-close"></div>
       </button>
     </div>
-    <div id="search-project" class="absolute z-10 start-0 end-0"></div>
+    <div id="search-{{ id }}"
+         data-projects-list="true"
+         {% if mini -%}data-mini-size="true"{%- endif %}
+         data-name="{{ id }}"
+         class="absolute z-10 start-0 end-0"></div>
   </div>
   <script type="module">
     import {
@@ -294,15 +300,15 @@
       debounce
     } from '/static/js/common/common.js';
 
-    const projectInput = document.getElementById('project');
-    const cleanprojectButton = document.getElementById('clean-project');
-    const contentData = "search-project";
+    const projectInput = document.getElementById('{{ id }}');
+    const cleanprojectButton = document.getElementById('clean-{{ id }}');
+    const contentData = "search-{{ id }}";
 
     projectInput.addEventListener('input', debounce(() => {
       if (projectInput.value.length > 2) {
-        htmx.trigger('#project', 'searchprojects');
+        htmx.trigger('#{{ id }}', 'searchprojects');
       } else {
-        document.getElementById('search-project').innerHTML = "";
+        document.getElementById('search-{{ id }}').innerHTML = "";
       }
     }));
 
@@ -311,7 +317,7 @@
     projectInput.addEventListener('focusout', () => {
       // Delay the execution to allow the user to click on the search results
       setTimeout(() => {
-        document.getElementById('search-project').innerHTML = "";
+        document.getElementById(contentData).innerHTML = "";
         projectInput.value = "";
       }, 200);
     });
@@ -385,8 +391,10 @@
 {# End toggle checkbox #}
 
 {# Select option #}
-{% macro select_option(value, label, selected = "") %}
-  <option value="{{ value }}" {% if value == selected|ref %}selected{% endif %}>{{ label }}</option>
+{% macro select_option(value, label, selected = "", disabled = false) %}
+  <option value="{{ value }}"
+          {% if value == selected|ref %}selected{% endif %}
+          {% if disabled %}disabled{% endif %}>{{ label }}</option>
 {% endmacro select_option %}
 {# End select option #}
 
@@ -404,82 +412,6 @@
   </div>
 {% endmacro badge %}
 {# End badge #}
-
-{# Input range #}
-{% macro input_range(name, value = "0") %}
-  <div class="relative">
-    <input id="{{ name }}"
-           name="{{ name }}"
-           type="range"
-           min="0"
-           max="100"
-           step="5"
-           value="{{ value }}"
-           class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-900">
-    <div id="tooltip-{{ name }}"
-         role="tooltip"
-         class="duration-100 transition-opacity opacity-0 absolute z-10 inline-block px-2 py-1 text-sm font-medium text-white text-center bg-primary-900 rounded-lg shadow-xs tooltip top-8 start-[8.5px] -ms-6 w-12">
-      <span>0</span><small>%</small>
-      <div class="h-0 w-0 border-x-[6px] border-x-transparent border-b-[6px] border-b-primary-900 absolute -top-1.5 start-[18px]">
-      </div>
-    </div>
-    <ul class="flex justify-between w-full px-[10px] h-5">
-      <li class="flex justify-center relative text-xs text-gray-500">
-        <span class="absolute">0</span>
-      </li>
-      <li class="flex justify-center relative text-xs text-gray-500">
-        <span class="absolute">25</span>
-      </li>
-      <li class="flex justify-center relative text-xs text-gray-500">
-        <span class="absolute">50</span>
-      </li>
-      <li class="flex justify-center relative text-xs text-gray-500">
-        <span class="absolute">75</span>
-      </li>
-      <li class="flex justify-center relative text-xs text-gray-500">
-        <span class="absolute">100</span>
-      </li>
-    </ul>
-  </div>
-  {# djlint:off #}
-  <script type="module">
-    import {
-      debounce
-    } from '/static/js/common/common.js';
-
-    // Update the styles of the tooltip and the input range background
-    const refreshStyles = (newValue) => {
-      const value = parseInt(newValue, 10);
-      const thumbSize = 17;
-      const offset = thumbSize * (0.5 - value / 100);
-      const tooltip = document.getElementById('tooltip-{{ name }}');
-      tooltip.getElementsByTagName('span')[0].textContent = value;
-      tooltip.style.left = `calc(${value}% + ${offset}px)`;
-      const inputRange = document.getElementById('{{ name }}');
-      inputRange.style.backgroundImage = `linear-gradient(90deg, var(--primary-color) 0%, var(--primary-color) ${value}%, rgb(229 231 235 / var(--tw-bg-opacity, 1)) ${value}%, rgb(229 231 235 / var(--tw-bg-opacity, 1)) 100%)`;
-    };
-
-    const inputRange = document.getElementById('{{ name }}');
-    const tooltip = document.getElementById('tooltip-{{ name }}');
-    // Send the value to refresh the styles
-    inputRange.addEventListener('input', debounce((e) => {
-      refreshStyles(e.target.value);
-    }, 20));
-
-    inputRange.addEventListener('mousedown', (e) => {
-      tooltip.classList.remove('opacity-0');
-    });
-
-    inputRange.addEventListener('mouseup', (e) => {
-      tooltip.classList.add('opacity-0');
-    });
-
-    // Set the initial value
-    refreshStyles({{ value }});
-</script>
-  {# djlint:on #}
-{% endmacro input_range %}
-{# End input range #}
 
 {# Form title #}
 {% macro form_title(title, description = "") %}
@@ -506,7 +438,7 @@
 {# End radio box #}
 
 {# Form image #}
-{% macro images_form(label, name, icon = "company", value = "") %}
+{% macro images_form(label, name, icon = "company", value = "", url_image = "") %}
   {% let empty_image = value.is_empty() %}
 
   {# Images form #}
@@ -524,20 +456,21 @@
           {% call spinner(size = 14, bg_color = "gray-300") %}
         </div>
 
-        {# Placeholder image #}
-        <div id="placeholder-image"
-             class="svg-icon size-20 icon-{{ icon }} bg-white m-auto {%- if !empty_image %} hidden {%- endif -%}">
-        </div>
-        {# End placeholder image #}
-
-        {# Image #}
-        <img id="image"
-             src="{%- if !empty_image -%}/dashboard/images/{{ value }}/small{%- endif -%}"
-             alt="Image"
-             height="auto"
-             width="auto"
-             class="size-[86px] object-contain rounded-lg m-auto {%- if empty_image %} hidden {%- endif -%}">
-        {# End image #}
+        {% if !empty_image %}
+          {# Image #}
+          <img id="image"
+               src="{{ url_image }}"
+               alt="Image"
+               height="auto"
+               width="auto"
+               class="size-[86px] object-contain rounded-lg m-auto">
+          {# End image #}
+        {% else %}
+          {# Placeholder image #}
+          <div id="placeholder-image"
+               class="svg-icon size-20 icon-{{ icon }} bg-white m-auto"></div>
+          {# End placeholder image #}
+        {% endif %}
       </div>
 
       <div class="flex flex-col justify-between self-stretch">
@@ -647,6 +580,18 @@
   </div>
 {% endmacro dropdown_card %}
 {# End dropdown card #}
+
+{# Alert box #}
+{% macro alert_box(content, title = "") %}
+  <div class="p-10 md:p-14">
+    <div class="border border-primary-300 p-10 text-sm text-gray-800 rounded-lg bg-primary-50 text-center"
+         role="alert">
+      <div class="text-xl mb-6">{{ title }}</div>
+      {{ content }}
+    </div>
+  </div>
+{% endmacro alert_box %}
+{# End alert box #}
 
 {# Alerts #}
 {# djlint:off #}

@@ -1,6 +1,7 @@
-import { LitElement, html, createRef, ref } from "https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js";
+import { html, createRef, ref } from "https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js";
+import { LitWrapper } from "/static/js/common/litWrapper.js";
 
-export class MarkdownEditor extends LitElement {
+export class MarkdownEditor extends LitWrapper {
   static properties = {
     id: { type: String },
     name: { type: String },
@@ -20,11 +21,6 @@ export class MarkdownEditor extends LitElement {
     this.required = false;
     this.onChange = undefined;
     this.mini = false;
-  }
-
-  createRenderRoot() {
-    // Disable shadow dom to use Tailwind CSS
-    return this;
   }
 
   firstUpdated() {
