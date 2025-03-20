@@ -20,10 +20,10 @@ pub(crate) trait DBJobBoard {
     async fn get_job_jobboard(&self, job_id: &Uuid) -> Result<Option<Job>>;
 
     /// Get filters options used to search jobs.
-    async fn get_jobs_filters_options(&self, job_board_id: &Uuid) -> Result<FiltersOptions>;
+    async fn get_jobs_filters_options(&self) -> Result<FiltersOptions>;
 
     /// Search jobs.
-    async fn search_jobs(&self, job_board_id: &Uuid, filters: &Filters) -> Result<JobsSearchOutput>;
+    async fn search_jobs(&self, filters: &Filters) -> Result<JobsSearchOutput>;
 }
 
 #[async_trait]
@@ -67,9 +67,10 @@ impl DBJobBoard for PgDB {
                             'member', (
                                 select nullif(jsonb_strip_nulls(jsonb_build_object(
                                     'member_id', m.member_id,
-                                    'name', m.name,
+                                    'foundation', m.foundation,
                                     'level', m.level,
-                                    'logo_url', m.logo_url
+                                    'logo_url', m.logo_url,
+                                    'name', m.name
                                 )), '{}'::jsonb)
                             )
                         )), '{}'::jsonb)
@@ -85,9 +86,10 @@ impl DBJobBoard for PgDB {
                     (
                         select json_agg(json_build_object(
                             'project_id', p.project_id,
-                            'name', p.name,
+                            'foundation', p.foundation,
+                            'logo_url', p.logo_url,
                             'maturity', p.maturity,
-                            'logo_url', p.logo_url
+                            'name', p.name
                         ))
                         from project p
                         left join job_project jp using (project_id)
@@ -147,50 +149,44 @@ impl DBJobBoard for PgDB {
     }
 
     #[instrument(skip(self))]
-    async fn get_jobs_filters_options(&self, job_board_id: &Uuid) -> Result<FiltersOptions> {
+    async fn get_jobs_filters_options(&self) -> Result<FiltersOptions> {
         // Query database
         let db = self.pool.get().await?;
         let row = db
             .query_one(
                 "
                 select
-                    benefits,
-                    skills,
                     (
                         select json_agg(json_build_object(
                             'project_id', project_id,
-                            'name', name,
+                            'foundation', foundation,
+                            'logo_url', logo_url,
                             'maturity', maturity,
-                            'logo_url', logo_url
+                            'name', name
                         ))
                         from project
-                        where job_board_id = $1::uuid
-                    )::text as projects
-                from job_board
-                where job_board_id = $1::uuid;
+                    )::text as projects;
                 ",
-                &[&job_board_id],
+                &[],
             )
             .await?;
 
         // Prepare filters options
         let filters_options = FiltersOptions {
-            benefits: row.get("benefits"),
             projects: serde_json::from_str(&row.get::<_, String>("projects"))?,
-            skills: row.get("skills"),
         };
 
         Ok(filters_options)
     }
 
     #[instrument(skip(self))]
-    async fn search_jobs(&self, job_board_id: &Uuid, filters: &Filters) -> Result<JobsSearchOutput> {
+    async fn search_jobs(&self, filters: &Filters) -> Result<JobsSearchOutput> {
         // Query database
         let db = self.pool.get().await?;
         let row = db
             .query_one(
-                "select jobs::text, total from search_jobs($1::uuid, $2::jsonb)",
-                &[&job_board_id, &Json(filters)],
+                "select jobs::text, total from search_jobs($1::jsonb)",
+                &[&Json(filters)],
             )
             .await?;
 

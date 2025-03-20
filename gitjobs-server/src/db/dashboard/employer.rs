@@ -13,7 +13,7 @@ use crate::{
     templates::dashboard::employer::{
         applications::{self, Application},
         employers::{Employer, EmployerSummary},
-        jobs::{Job, JobBoard, JobSummary},
+        jobs::{Job, JobSummary},
     },
 };
 
@@ -21,7 +21,7 @@ use crate::{
 #[async_trait]
 pub(crate) trait DBDashBoardEmployer {
     /// Add employer.
-    async fn add_employer(&self, job_board_id: &Uuid, user_id: &Uuid, employer: &Employer) -> Result<Uuid>;
+    async fn add_employer(&self, user_id: &Uuid, employer: &Employer) -> Result<Uuid>;
 
     /// Add job.
     async fn add_job(&self, employer_id: &Uuid, job: &Job) -> Result<()>;
@@ -40,9 +40,6 @@ pub(crate) trait DBDashBoardEmployer {
 
     /// Get employer.
     async fn get_employer(&self, employer_id: &Uuid) -> Result<Employer>;
-
-    /// Get job board.
-    async fn get_job_board(&self, job_board_id: &Uuid) -> Result<JobBoard>;
 
     /// Get job.
     async fn get_job_dashboard(&self, job_id: &Uuid) -> Result<Job>;
@@ -76,7 +73,7 @@ pub(crate) trait DBDashBoardEmployer {
 #[async_trait]
 impl DBDashBoardEmployer for PgDB {
     #[instrument(skip(self), err)]
-    async fn add_employer(&self, job_board_id: &Uuid, user_id: &Uuid, employer: &Employer) -> Result<Uuid> {
+    async fn add_employer(&self, user_id: &Uuid, employer: &Employer) -> Result<Uuid> {
         let mut db = self.pool.get().await?;
         let tx = db.transaction().await?;
 
@@ -85,7 +82,6 @@ impl DBDashBoardEmployer for PgDB {
             .query_one(
                 "
                 insert into employer (
-                    job_board_id,
                     company,
                     description,
                     public,
@@ -94,18 +90,16 @@ impl DBDashBoardEmployer for PgDB {
                     member_id,
                     website_url
                 ) values (
-                    $1::uuid,
+                    $1::text,
                     $2::text,
-                    $3::text,
-                    $4::bool,
+                    $3::bool,
+                    $4::uuid,
                     $5::uuid,
                     $6::uuid,
-                    $7::uuid,
-                    $8::text
+                    $7::text
                 ) returning employer_id;
                 ",
                 &[
-                    &job_board_id,
                     &employer.company,
                     &employer.description,
                     &employer.public,
@@ -337,9 +331,10 @@ impl DBDashBoardEmployer for PgDB {
                     (
                         select nullif(jsonb_strip_nulls(jsonb_build_object(
                             'member_id', m.member_id,
-                            'name', m.name,
+                            'foundation', m.foundation,
                             'level', m.level,
-                            'logo_url', m.logo_url
+                            'logo_url', m.logo_url,
+                            'name', m.name
                         )), '{}'::jsonb)
                     ) as member
                 from employer e
@@ -365,29 +360,6 @@ impl DBDashBoardEmployer for PgDB {
         };
 
         Ok(employer)
-    }
-
-    #[instrument(skip(self), err)]
-    async fn get_job_board(&self, job_board_id: &Uuid) -> Result<JobBoard> {
-        let db = self.pool.get().await?;
-        let row = db
-            .query_one(
-                "
-                select
-                    benefits,
-                    skills
-                from job_board
-                where job_board_id = $1::uuid;
-                ",
-                &[&job_board_id],
-            )
-            .await?;
-        let job_board = JobBoard {
-            benefits: row.get("benefits"),
-            skills: row.get("skills"),
-        };
-
-        Ok(job_board)
     }
 
     #[instrument(skip(self), err)]
@@ -431,9 +403,10 @@ impl DBDashBoardEmployer for PgDB {
                     (
                         select json_agg(json_build_object(
                             'project_id', p.project_id,
-                            'name', p.name,
+                            'foundation', p.foundation,
+                            'logo_url', p.logo_url,
                             'maturity', p.maturity,
-                            'logo_url', p.logo_url
+                            'name', p.name
                         ))
                         from project p
                         left join job_project jp using (project_id)

@@ -8,7 +8,7 @@
       hx-ext="no-empty-vals"
       hx-trigger="submit"
       hx-indicator="#dashboard-spinner, #save-spinner"
-      hx-disabled-elt="button[type=submit], #publish-job, #cancel-button, #preview-button">
+      hx-disabled-elt="button[type=submit], #cancel-button, #preview-button">
   <div class="space-y-12">
     <div class="border-b border-gray-900/10 pb-12">
       {% call macros::form_title(title = "Job details", description = "Please add as many details about this job as possible. You can save it as a draft and come back later to finish it.") %}
@@ -152,7 +152,7 @@
 
         {# Job skills #}
         <div class="col-span-full">
-          <multi-select id="skills" name="Skills" options="{{ skills|json }}"
+          <multi-select id="skills" name="Skills"
           {% if let Some(job_skills) = job.skills %}selected="{{ job_skills|json }}"{% endif %}
           legend="Relevant skills for this job position."></multi-select>
         </div>
@@ -302,7 +302,7 @@
 
         {# Job benefits #}
         <div class="col-span-full">
-          <multi-select id="benefits" name="Benefits" options="{{ benefits|json }}"
+          <multi-select id="benefits" name="Benefits"
           {% if let Some(job_benefits) = job.benefits %}selected="{{ job_benefits|json }}"{% endif %}
           legend="Benefits and perks for employees."></multi-select>
         </div>
@@ -340,10 +340,10 @@
 
         {# Projects #}
         <div class="col-span-full lg:col-span-3">
-          <label for="project" class="form-label">CNCF projects</label>
+          <label for="project" class="form-label">Projects</label>
           {% call macros::search_project() %}
           <p class="form-legend">
-            If the job position involves contributing to any CNCF projects, please list them here.
+            If the job position involves contributing to any of the supported foundations projects, please list them here.
           </p>
         </div>
         <div class="col-span-full -mt-4">
@@ -362,7 +362,7 @@
             if (projects) {
               const parsedProjects = JSON.parse(projects);
               parsedProjects.forEach((project) => {
-                addProjectCard(project.project_id, project.name, project.maturity, project.logo_url, 'selected-projects');
+                addProjectCard(project.project_id, project.name, project.maturity, project.foundation, project.logo_url, 'selected-projects');
               });
             }
           }
@@ -404,31 +404,12 @@
                 class="btn-primary-outline">Cancel</button>
         {# End cancel button #}
 
-        {# When status is published #}
-        {% if job.status == JobStatus::Published %}
-          {# Save button #}
-          <button type="submit" class="btn-primary">
-            {% call macros::btn_spinner(id = "save-spinner", bg_color = "white", fill_color = "primary-300") %}
-            Save
-          </button>
-          {# End save button #}
-
-          {# When status is not published #}
-        {% else %}
-          {# Save button #}
-          <button type="submit" class="btn-secondary">
-            {% call macros::btn_spinner(id = "save-spinner", bg_color = "white", fill_color = "primary-900") %}
-            Save
-          </button>
-          {# End save button #}
-
-          {# Publish button #}
-          <button id="publish-job" type="button" class="btn-primary">
-            {% call macros::btn_spinner(id = "publish-spinner", bg_color = "white", fill_color = "primary-300") %}
-            Publish
-          </button>
-          {# End publish button #}
-        {% endif %}
+        {# Save button #}
+        <button type="submit" class="btn-primary">
+          {% call macros::btn_spinner(id = "save-spinner", bg_color = "white", fill_color = "primary-300") %}
+          Save
+        </button>
+        {# End save button #}
       </div>
     </div>
   </div>
@@ -480,26 +461,6 @@
       }
     }
   });
-
-  // Publish job
-  const publishBtn = document.getElementById('publish-job');
-  if (publishBtn) {
-    publishBtn.addEventListener('click', () => {
-      // Update hx-spinner
-      jobsForm.setAttribute('hx-indicator', '#dashboard-spinner, #publish-spinner');
-      // Update the job status to published
-      jobsForm.querySelector('input[name="status"]').value = 'published';
-
-      // Check if the form is valid before submitting,
-      // htmx does not trigger the form validation
-      // when submitting the form from not a submit button
-      if (!jobsForm.checkValidity()) {
-        jobsForm.reportValidity();
-      } else {
-        triggerActionOnForm('jobs-form', 'submit');
-      }
-    });
-  }
 
   // On preview button click, show the preview modal
   const previewButton = document.getElementById('preview-button');

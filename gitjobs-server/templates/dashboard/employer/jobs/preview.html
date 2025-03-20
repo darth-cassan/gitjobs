@@ -4,12 +4,12 @@
   <div class="flex-grow">
     <div class="flex-grow flex items-stretch gap-x-5 min-w-0">
       {# Image #}
-      <div class="min-w-[56px]">
+      <div class="flex justify-center items-center size-14 shrink-0">
         {% if let Some(logo_id) = employer.logo_id %}
           {% let logo = &self::build_dashboard_image_url(logo_id, "small") %}
-          <img class="size-14 rounded-lg"
-               height="56"
-               width="56"
+          <img class="size-auto"
+               height="auto"
+               width="auto"
                src="{{ logo }}"
                alt="{{ employer.company }} logo">
         {% else %}
@@ -36,8 +36,8 @@
     <div class="w-1/4 ps-3">
       <div class="flex gap-x-2 items-center bg-gray-50 border rounded-lg p-2 max-w-full min-w-full">
         <div>
-          <img src="/static/images/cncf_icon.svg"
-               alt="CNCF icon"
+          <img src="/static/images/foundations/{{ member.foundation }}.svg"
+               alt="{{ member.foundation }} logo"
                height="40"
                width="40"
                class="size-10">
@@ -45,7 +45,7 @@
         <div class="flex flex-col justify-start min-w-0">
           <div class="truncate text-start text-gray-700 font-medium">{{ member.name }}</div>
           <div class="truncate text-nowrap uppercase max-w-[100%] text-xs/4 font-medium text-gray-400">
-            CNCF {{ member.level }} member
+            {{ member.foundation }} {{ member.level }} member
           </div>
         </div>
       </div>
@@ -237,7 +237,7 @@
     <div class="flex flex-col space-y-3 mt-2">
       {% for p in projects %}
         <div class="border rounded-lg p-2 text-sm/5 bg-white w-full">
-          {% let label = &format!("CNCF {}", p.maturity) %}
+          {% let label = &format!("{} {}", p.foundation, p.maturity) %}
           {% call macros::dropdown_card(name = p.name, label = label, logo_url = p.logo_url, line_height = 5) %}
         </div>
       {% endfor %}

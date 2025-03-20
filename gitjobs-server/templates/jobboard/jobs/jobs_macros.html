@@ -87,11 +87,6 @@
     {# Projects #}
     <div>
       {% call filters_subtitle(text = "Projects you'd like to work on") %}
-      <div class="mt-2 relative">
-        <select class="select-primary py-0.5 text-[0.8rem]/6 text-gray-500">
-          <option value="cncf" selected="">CNCF</option>
-        </select>
-      </div>
       <searchable-filter name="projects" options="{{ filters_options.projects|json }}" form="{{ device }}-jobs-form" {%- if let Some(filters_projects) = filters.projects %}selected="{{ filters_projects|json }}"{%- endif -%}></searchable-filter>
     </div>
     {# End projects #}
@@ -133,7 +128,7 @@
   {# Benefits #}
   <div>
     {% call filters_subtitle(text = "Benefits") %}
-    <searchable-filter name="benefits" viewType="rows" options="{{ filters_options.benefits|json }}" form="{{ device }}-jobs-form" {%- if let Some(filters_benefits) = filters.benefits %}selected="{{ filters_benefits|json }}"{%- endif -%}></searchable-filter>
+    <searchable-filter name="benefits" viewType="rows" form="{{ device }}-jobs-form" {%- if let Some(filters_benefits) = filters.benefits %}selected="{{ filters_benefits|json }}"{%- endif -%}></searchable-filter>
   </div>
   {# End benefits #}
 </div>
