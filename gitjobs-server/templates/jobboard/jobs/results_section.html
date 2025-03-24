@@ -25,20 +25,25 @@
   {% else %}
     {# Cards -#}
     {% for job in jobs %}
-      <button data-preview-job="true"
+      <button id="job-preview-{{ job.job_id }}"
+              data-preview-job="true"
+              data-job-id="{{ job.job_id }}"
               hx-get="/jobs/{{ job.job_id }}"
               hx-target="#preview-content"
-              class="mx-5 md:mx-7 text-start cursor-pointer border rounded-lg hover:outline hover:-outline-offset-1 p-5 md:p-7
-                     {% if let Some(member) = job.employer.member -%}
-                       border-primary-400 bg-primary-50/20 hover:outline-primary-500{%- else -%}hover:outline-gray-300{%- endif -%}"
+              hx-trigger="click,open-modal"
+              hx-indicator="#spinner-{{ job.job_id }}"
+              class="relative mx-5 md:mx-7 text-start enabled:cursor-pointer border rounded-lg enabled:hover:outline enabled:hover:-outline-offset-1 p-5 md:p-7 {%- if let Some(member) = job.employer.member %} border-primary-400 bg-primary-50/20 enabled:hover:outline-primary-500{%- else %} enabled:hover:outline-gray-400{%- endif -%}"
+              hx-disabled-elt="[data-preview-job]"
               hx-boost="true">
+        {# Job title #}
         <div class="flex flex-1 flex-row items-stretch space-x-4 w-full">
           {# Company logo #}
           <div class="flex justify-center items-center shrink-0 size-12 bg-white">
             {% if let Some(logo_id) = job.employer.logo_id %}
               {% let logo = &self::build_jobboard_image_url(logo_id, "medium") %}
               {% let logo_small = &self::build_jobboard_image_url(logo_id, "small") %}
-              <img class="size-auto flex"
+              <img loading="lazy"
+                   class="size-auto flex"
                    height="auto"
                    width="auto"
                    srcset="{{ logo_small }}, {{ logo }} 2x"
@@ -189,6 +194,12 @@
             {% endif %}
           </div>
         </div>
+
+        {# Spinner #}
+        <div id="spinner-{{ job.job_id }}"
+             class="hx-spinner absolute rounded-lg top-0 left-0 h-full w-full rounded-lg box-animated {%- if let Some(member) = job.employer.member %} box-animated-primary{%- endif -%}">
+        </div>
+        {# End spinner #}
       </button>
     {% endfor %}
     {# End cards -#}
@@ -206,7 +217,8 @@
   } from '/static/js/jobboard/filters.js';
   import {
     toggleModalVisibility,
-    isSuccessfulXHRStatus
+    isSuccessfulXHRStatus,
+    addParamToQueryString
   } from '/static/js/common/common.js';
 
   const previewBtns = document.querySelectorAll('[data-preview-job]');
@@ -214,6 +226,7 @@
     btn.addEventListener('htmx:afterRequest', (e) => {
       if (isSuccessfulXHRStatus(e.detail.xhr.status)) {
         toggleModalVisibility('preview-modal');
+        addParamToQueryString('job_id', btn.dataset.jobId);
       } else {
         // When the preview is not available, show an error message
         showErrorAlert('Something went wrong previewing the job, please try again later.');
