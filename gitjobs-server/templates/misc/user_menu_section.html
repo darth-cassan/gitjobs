@@ -1,0 +1,17 @@
+{% import "header.html" as macros_header %}
+
+<div class="flex items-center">
+  {% if user.logged_in %}
+    <div class="hidden lg:flex items-center space-x-5">
+      <a hx-boost="true"
+         href="/dashboard/employer"
+         hx-target="body"
+         class="btn-primary-outline-anchor w-[140px]">Post a job</a>
+      <a hx-boost="true"
+         href="/dashboard/job-seeker"
+         hx-target="body"
+         class="btn-primary-outline-anchor w-[140px]">Create profile</a>
+    </div>
+  {% endif %}
+  <div class="ms-10">{% call macros_header::user_menu(user) %}</div>
+</div>

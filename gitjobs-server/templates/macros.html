@@ -15,9 +15,9 @@
 {# End spinner -#}
 
 {# Button spinner #}
-{% macro btn_spinner(id, size = 5, bg_color = "gray-200", fill_color="primary-600") %}
+{% macro btn_spinner(id, size = 5, bg_color = "gray-200", fill_color="primary-600", htmx = true) %}
   <div id="{{ id }}"
-       class="top-0 start-0 bottom-0 end-0 bg-inherit absolute hx-spinner">
+       class="top-0 start-0 bottom-0 end-0 bg-inherit absolute {%- if htmx %} hx-spinner{%- endif -%}">
     <div class="flex items-center justify-center h-full w-full">
       {% call spinner(size = size, fill_color = fill_color, bg_color = bg_color) %}
     </div>

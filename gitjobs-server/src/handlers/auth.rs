@@ -27,7 +27,7 @@ use crate::{
         extractors::{OAuth2, Oidc},
     },
     notifications::{DynNotificationsManager, NewNotification, NotificationKind},
-    templates::{self, PageId, notifications::EmailVerification},
+    templates::{self, PageId, auth::User, notifications::EmailVerification},
 };
 
 /// Log in URL.
@@ -56,37 +56,47 @@ pub(crate) const SIGN_UP_URL: &str = "/sign-up";
 /// Handler that returns the log in page.
 #[instrument(skip_all, err)]
 pub(crate) async fn log_in_page(
+    auth_session: AuthSession,
     messages: Messages,
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, HandlerError> {
+    // Check if the user is already logged in
+    if auth_session.user.is_some() {
+        return Ok(Redirect::to("/").into_response());
+    }
+
+    // Prepare template
     let template = templates::auth::LogInPage {
-        logged_in: false,
         messages: messages.into_iter().collect(),
-        name: None,
         next_url: query.get("next_url").cloned(),
         page_id: PageId::LogIn,
-        username: None,
+        user: User::default(),
     };
 
-    Ok(Html(template.render()?))
+    Ok(Html(template.render()?).into_response())
 }
 
 /// Handler that returns the sign up page.
 #[instrument(skip_all, err)]
 pub(crate) async fn sign_up_page(
+    auth_session: AuthSession,
     messages: Messages,
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, HandlerError> {
+    // Check if the user is already logged in
+    if auth_session.user.is_some() {
+        return Ok(Redirect::to("/").into_response());
+    }
+
+    // Prepare template
     let template = templates::auth::SignUpPage {
-        logged_in: false,
         messages: messages.into_iter().collect(),
-        name: None,
         next_url: query.get("next_url").cloned(),
         page_id: PageId::SignUp,
-        username: None,
+        user: User::default(),
     };
 
-    Ok(Html(template.render()?))
+    Ok(Html(template.render()?).into_response())
 }
 
 // Actions handlers.
