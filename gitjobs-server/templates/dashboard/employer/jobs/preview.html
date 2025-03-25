@@ -213,6 +213,18 @@
   {% call job_workplace(workplace = job.workplace, location = job.location|display_some_or("-")) %}
   {# End location #}
 
+  {# Timezone #}
+  {% if let Some(tz_start) = job.tz_start %}
+    {% call job_details_subheading(content = "Timezone") %}
+    {% if let Some(tz_end) = job.tz_end %}
+      {% let timezone = format!("{} - {}", tz_start, tz_end) %}
+      {% call job_details_content(text = timezone) %}
+    {% else %}
+      {% call job_details_content(text = tz_start) %}
+    {% endif %}
+  {% endif %}
+  {# End timezone #}
+
   {# Open source #}
   {% if let Some(open_source) = job.open_source %}
     {% if open_source + 0 > 0 %}

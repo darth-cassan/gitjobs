@@ -168,6 +168,8 @@ impl DBDashBoardEmployer for PgDB {
                     salary_period,
                     seniority,
                     skills,
+                    tz_end,
+                    tz_start,
                     upstream_commitment,
                     published_at
                 )
@@ -192,7 +194,9 @@ impl DBDashBoardEmployer for PgDB {
                     $18::text,
                     $19::text,
                     $20::text[],
-                    $21::int,
+                    $21::text,
+                    $22::text,
+                    $23::int,
                     case when $3::text = 'published' then current_timestamp else null end
                 returning job_id;
                 ",
@@ -217,6 +221,8 @@ impl DBDashBoardEmployer for PgDB {
                     &job.salary_period,
                     &job.seniority.as_ref().map(ToString::to_string),
                     &job.skills,
+                    &job.tz_end,
+                    &job.tz_start,
                     &job.upstream_commitment,
                 ],
             )
@@ -404,6 +410,8 @@ impl DBDashBoardEmployer for PgDB {
                     j.salary_period,
                     j.seniority,
                     j.skills,
+                    j.tz_end,
+                    j.tz_start,
                     j.updated_at,
                     j.upstream_commitment,
                     (
@@ -464,6 +472,8 @@ impl DBDashBoardEmployer for PgDB {
                 .get::<_, Option<String>>("seniority")
                 .map(|s| s.parse().expect("valid seniority")),
             skills: row.get("skills"),
+            tz_end: row.get("tz_end"),
+            tz_start: row.get("tz_start"),
             updated_at: row.get("updated_at"),
             upstream_commitment: row.get("upstream_commitment"),
         };
@@ -677,7 +687,9 @@ impl DBDashBoardEmployer for PgDB {
                 salary_period = $18::text,
                 seniority = $19::text,
                 skills = $20::text[],
-                upstream_commitment = $21::int,
+                tz_end = $21::text,
+                tz_start = $22::text,
+                upstream_commitment = $23::int,
                 updated_at = current_timestamp
             where job_id = $1::uuid;
             ",
@@ -702,6 +714,8 @@ impl DBDashBoardEmployer for PgDB {
                 &job.salary_period,
                 &job.seniority.as_ref().map(ToString::to_string),
                 &job.skills,
+                &job.tz_end,
+                &job.tz_start,
                 &job.upstream_commitment,
             ],
         )
