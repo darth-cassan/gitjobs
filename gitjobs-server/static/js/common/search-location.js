@@ -51,6 +51,17 @@ export class SearchLocation extends LitWrapper {
     super.disconnectedCallback();
   }
 
+  async cleanLocation() {
+    this.location_id = "";
+    this.city = "";
+    this.state = "";
+    this.country = "";
+    this.value = "";
+
+    // Wait for the update to complete
+    await this.updateComplete;
+  }
+
   _formatLocation(city, state, country) {
     if (!city && !state && !country) {
       return "";
@@ -186,10 +197,10 @@ export class SearchLocation extends LitWrapper {
   }
 
   _renderOptions() {
-    return html` <div class="bg-white divide-y divide-gray-100 rounded-lg shadow w-full border mt-1">
+    return html` <div class="bg-white divide-y divide-stone-100 rounded-lg shadow w-full border mt-1">
       ${this.options.length === 0
-        ? html`<div class="px-8 py-4 text-sm/6 text-gray-600 italic">No locations found</div>`
-        : html`<ul class="py-2 text-gray-700 overflow-auto max-h-[180px]">
+        ? html`<div class="px-8 py-4 text-sm/6 text-stone-600 italic">No locations found</div>`
+        : html`<ul class="py-2 text-stone-700 overflow-auto max-h-[180px]">
             ${this.options.map(
               (l, index) =>
                 html` <li class="group ${this.activeIndex === index ? "active" : ""}" data-index="${index}">
@@ -197,10 +208,10 @@ export class SearchLocation extends LitWrapper {
                     type="button"
                     @click=${() => this._selectLocation(l)}
                     @mouseover=${() => (this.activeIndex = index)}
-                    class="btn-location flex items-center px-4 py-2 w-full hover:bg-gray-100 group-[.active]:bg-gray-100"
+                    class="btn-location flex items-center px-4 py-2 w-full hover:bg-stone-100 group-[.active]:bg-stone-100"
                   >
                     <div class="me-2">
-                      <div class="svg-icon size-4 icon-location bg-gray-500"></div>
+                      <div class="svg-icon size-4 icon-location bg-stone-500"></div>
                     </div>
                     <div class="location-text truncate">
                       ${this._formatLocation(l.city, l.state, l.country)}
@@ -217,7 +228,7 @@ export class SearchLocation extends LitWrapper {
       <div class="mt-2 relative location-container">
         <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
           <div
-            class="svg-icon bg-gray-300 ${this.size === "small"
+            class="svg-icon bg-stone-300 ${this.size === "small"
               ? " size-3.5 icon-location"
               : "size-4 icon-search"}"
           ></div>
@@ -228,7 +239,7 @@ export class SearchLocation extends LitWrapper {
           type="text"
           .value=${this.value}
           class="input-primary peer ${this.size === "small"
-            ? "py-0.5 peer px-9 rounded-lg text-xs/6 text-gray-500"
+            ? "py-0.5 peer px-9 rounded-lg text-xs/6 text-stone-500"
             : "px-10"}"
           placeholder="Search location"
           autocomplete="off"
@@ -259,7 +270,7 @@ export class SearchLocation extends LitWrapper {
               <div role="status">
                 <svg
                   aria-hidden="true"
-                  class="inline size-5 text-gray-200 animate-spin fill-primary-600"
+                  class="inline size-5 text-stone-200 animate-spin fill-primary-600"
                   viewBox="0 0 100 101"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -281,7 +292,7 @@ export class SearchLocation extends LitWrapper {
         <div class="absolute end-1.5 top-1.5 peer-placeholder-shown:hidden">
           <button @click=${this._cleanInput} type="button" class="mt-[2px]">
             <div
-              class="svg-icon bg-gray-400 hover:bg-gray-700 icon-close ${this.size === "small"
+              class="svg-icon bg-stone-400 hover:bg-stone-700 icon-close ${this.size === "small"
                 ? "size-4"
                 : "size-5"}"
             ></div>
@@ -294,7 +305,7 @@ export class SearchLocation extends LitWrapper {
       ${this.withDistance
         ? html`
             <div class="flex items-center space-x-3 mt-3">
-              <div class="text-xs/6 text-gray-400">Max. distance</div>
+              <div class="text-xs/6 text-stone-500/75">Max. distance</div>
               <div class="flex-grow">
                 <select
                   form=${this.form}

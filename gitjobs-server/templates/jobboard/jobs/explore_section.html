@@ -1,6 +1,10 @@
 {% import "jobboard/jobs/jobs_macros.html" as jobs_macros %}
 {% import "macros.html" as macros %}
 
+<div id="projects-list"
+     data-projects="{{ filters_options.projects|json }}"
+     class="hidden"></div>
+
 {# Mobile filters -#}
 <div id="drawer-filters"
      class="fixed top-0 left-0 z-[1100] h-screen overflow-y-auto -translate-x-full bg-white w-80 border border-r shadow-lg"
@@ -11,8 +15,8 @@
   {# Close button -#}
   <button id="close-filters"
           type="button"
-          class="group bg-transparent hover:bg-gray-200 rounded-full text-sm w-8 h-8 absolute top-4 end-2.5 flex items-center justify-center">
-    <div class="svg-icon size-4 bg-gray-400 group-hover:bg-gray-900 icon-close"></div>
+          class="group bg-transparent hover:bg-stone-200 rounded-full text-sm w-8 h-8 absolute top-4 end-2.5 flex items-center justify-center">
+    <div class="svg-icon size-4 bg-stone-400 group-hover:bg-stone-900 icon-close"></div>
     <span class="sr-only">Close menu</span>
   </button>
   {# End close button -#}
@@ -25,11 +29,12 @@
         hx-include="#searchbar"
         hx-ext="no-empty-vals"
         hx-indicator="#mobile-jobs-spinner"
+        hx-on::after-request="window.scrollTo({top: 0, behavior: 'instant'})"
         hx-boost="true">
   </form>
 
   {# Header Filters -#}
-  <div class="flex justify-between items-center border-solid border-0 border-b border-gray-100 p-5">
+  <div class="flex justify-between items-center border-solid border-0 border-b border-stone-100 p-5">
     <div class="flex space-x-3 relative">
       <div class="font-semibold text-sm text-black">Filters</div>
       <div id="mobile-jobs-spinner" class="hx-spinner absolute start-10 -top-1">
@@ -42,11 +47,7 @@
   {# End filters content -#}
 
   <div class="text-end p-5">
-    <button hx-get="/"
-            hx-target="body"
-            hx-boost="true"
-            hx-push-url="/"
-            class="btn-primary-outline btn-mini group">
+    <button id="reset-mobile-filters" class="btn-primary-outline btn-mini group">
       <div class="flex items-center space-x-1">
         <div class="svg-icon size-3 icon-close group-hover:bg-white"></div>
         <div>Reset</div>
@@ -56,7 +57,7 @@
 </div>
 {# Overlay -#}
 <div id="drawer-backdrop"
-     class="hidden bg-gray-900/50 fixed inset-0 z-[1050]"></div>
+     class="hidden bg-stone-900/50 fixed inset-0 z-[1050]"></div>
 {# End overlay -#}
 {# End mobile filters -#}
 
@@ -72,11 +73,12 @@
             hx-include="#searchbar"
             hx-ext="no-empty-vals"
             hx-indicator="#desktop-jobs-spinner"
+            hx-on::after-request="window.scrollTo({top: 0, behavior: 'instant'})"
             hx-boost="true">
       </form>
 
       {# Header #}
-      <div class="flex justify-between items-center border-solid border-0 border-b border-gray-100 p-5">
+      <div class="flex justify-between items-center border-solid border-0 border-b border-stone-100 p-5">
         <div class="font-semibold text-sm text-black">Filters</div>
 
         <div class="flex space-x-3 relative">
@@ -84,11 +86,7 @@
             {% call macros::spinner(size = 5) %}
           </div>
 
-          <button hx-get="/"
-                  hx-target="body"
-                  hx-boost="true"
-                  hx-push-url="/"
-                  class="btn-primary-outline btn-mini">Reset</button>
+          <button id="reset-desktop-filters" class="btn-primary-outline btn-mini">Reset</button>
         </div>
       </div>
       {# End header #}
@@ -119,7 +117,7 @@
                        name="ts_query"
                        type="text"
                        value='{{ filters.ts_query|display_some_or("") }}'
-                       class="peer w-[100%] rounded-full border border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-transparent focus:border-primary-500 focus:ring block flex-1 min-w-0 w-60 text-md p-2.5 ps-4 pe-14"
+                       class="peer w-[100%] rounded-full border border-stone-300 text-stone-900 placeholder-stone-400 focus:ring-transparent focus:border-primary-500 focus:ring block flex-1 min-w-0 w-60 text-md p-2.5 ps-4 pe-14"
                        placeholder="Search jobs"
                        autocomplete="off"
                        autocorrect="off"
@@ -129,7 +127,7 @@
                   {# Clean searchbar #}
                   <button id="clean-search-jobs"
                           class="mr-2 mt-[2px] block peer-placeholder-shown:hidden">
-                    <div class="svg-icon size-5 bg-gray-400 hover:bg-gray-700 icon-close"></div>
+                    <div class="svg-icon size-5 bg-stone-400 hover:bg-stone-700 icon-close"></div>
                   </button>
                   {# End clean searchbar #}
                 </div>
@@ -164,7 +162,7 @@
             </label>
             <select id="sort_by"
                     name="sort_by"
-                    class="block w-24 py-1 px-3 text-[0.8rem] leading-none h-[30px] text-gray-900 bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-0 focus:border-gray-300 hover:border-primary-500 focus:hover:border-primary-500">
+                    class="block w-24 py-1 px-3 text-[0.8rem] leading-none h-[30px] text-stone-900 bg-white border border-stone-300 rounded-full focus:outline-none focus:ring-0 focus:border-stone-300 hover:border-primary-500 focus:hover:border-primary-500">
               <option value="date" selected="">Date</option>
             </select>
           </div>
@@ -187,10 +185,11 @@
     close,
     searchOnEnter,
     cleanInputField,
+    resetForm,
     triggerActionOnForm
   } from '/static/js/jobboard/filters.js';
   import {
-    getParamFromQueryString
+    shouldDisplayJobModal
   } from '/static/js/common/common.js';
 
   const openFiltersBtn = document.getElementById('open-filters');
@@ -226,22 +225,12 @@
     });
   });
 
-  // Detect if the job preview modal should be displayed
-  const shouldDisplayJobModal = () => {
-    // Check if the job_id parameter is present in the URL
-    const job_id = getParamFromQueryString('job_id');
-    if (job_id) {
-      const elId = `job-preview-${job_id}`;
-      // Check if the job preview button exists
-      const jobPreviewBtn = document.getElementById(elId);
-      if (jobPreviewBtn) {
-        // Process the button
-        htmx.process(jobPreviewBtn);
-        // Open the modal
-        htmx.trigger(jobPreviewBtn, "open-modal");
-      }
-    }
-  };
+  const resetDesktopFilters = document.getElementById('reset-desktop-filters');
+  resetDesktopFilters.addEventListener('click', () => resetForm('desktop-jobs-form'));
 
+  const resetMobileFilters = document.getElementById('reset-mobile-filters');
+  resetMobileFilters.addEventListener('click', () => resetForm('mobile-jobs-form'));
+
+  // Display job modal if the job_id is present in the query string
   shouldDisplayJobModal();
 </script>

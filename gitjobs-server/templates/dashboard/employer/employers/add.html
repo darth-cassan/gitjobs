@@ -89,7 +89,7 @@
         <div class="form-label">Public</div>
         <label class="mt-2 inline-flex items-center cursor-pointer">
           {% call macros::toggle_checkbox(id = "public", checked = true) %}
-          <span class="ms-3 text-sm font-medium text-gray-900">Display in employers listing</span>
+          <span class="ms-3 text-sm font-medium text-stone-900">Display in employers listing</span>
         </label>
         <p class="form-legend">
           Your company will be listed in the employers section of the site. This may help attracting more applicants to your jobs.
@@ -98,7 +98,7 @@
       {# End Public #}
     </div>
 
-    <div class="mt-12 flex items-center justify-end gap-x-6 border-t border-gray-900/10 pt-12">
+    <div class="mt-12 flex items-center justify-end gap-x-6 border-t border-stone-900/10 pt-12">
       {# Cancel button #}
       <button id="cancel-button"
               hx-get="/dashboard/employer"
@@ -111,7 +111,7 @@
       <div class="relative">
         {# Submit employer form button #}
         <button type="submit" class="btn-primary">
-          {% call macros::btn_spinner(id = "save-spinner", bg_color = "white", fill_color = "primary-300") %}
+          {% call macros::btn_spinner(id = "save-spinner", spinner_type = "2") %}
           Save
         </button>
         {# End submit employer form button #}
@@ -131,10 +131,11 @@
   const employerForm = document.getElementById('employer-form');
 
   employerForm.addEventListener('htmx:afterRequest', (e) => {
-        // Check if the form is the employer form and not the input ts_query requesting locations
-        if (e.detail.elt.id === 'employer-form') {
-          if (!isSuccessfulXHRStatus(e.detail.xhr.status)) {
-            showErrorAlert('Something went wrong adding the profile, please try again later.');
-          }
-        });
+    // Check if the form is the employer form and not the input ts_query requesting locations
+    if (e.detail.elt.id === 'employer-form') {
+      if (!isSuccessfulXHRStatus(e.detail.xhr.status)) {
+        showErrorAlert('Something went wrong adding the profile, please try again later.');
+      }
+    }
+  });
 </script>

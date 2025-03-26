@@ -51,6 +51,12 @@ export class SearchableFilter extends LitWrapper {
       case "benefits":
         this.options = getBenefits();
         break;
+      case "projects":
+        const projects = document.getElementById("projects-list");
+        if (projects) {
+          this.options = JSON.parse(projects.dataset.projects);
+        }
+        break;
       default:
         this.options = this.options;
     }
@@ -61,7 +67,7 @@ export class SearchableFilter extends LitWrapper {
   _filterOptions() {
     if (this.enteredValue.length > 0) {
       this.visibleOptions = this.options.filter((option) => {
-        const name = this.name === "projects" ? option.name : option;
+        const name = this.name === "projects" ? option.name : unnormalize(option);
         return name.toLowerCase().includes(this.enteredValue.toLowerCase());
       });
     } else {
@@ -112,7 +118,7 @@ export class SearchableFilter extends LitWrapper {
   render() {
     return html`<div class="mt-2 relative">
       <div class="absolute top-2 start-0 flex items-center ps-3 pointer-events-none">
-        <div class="svg-icon size-3.5 icon-search bg-gray-300"></div>
+        <div class="svg-icon size-3.5 icon-search bg-stone-300"></div>
       </div>
       <input
         type="text"
@@ -129,17 +135,17 @@ export class SearchableFilter extends LitWrapper {
       />
       <div class="absolute end-1.5 top-0.5 peer-placeholder-shown:hidden">
         <button @click=${this._cleanEnteredValue} type="button" class="mt-[2px]">
-          <div class="svg-icon size-5 bg-gray-400 hover:bg-gray-700 icon-close"></div>
+          <div class="svg-icon size-5 bg-stone-400 hover:bg-stone-700 icon-close"></div>
         </button>
       </div>
       <div class="absolute z-10 start-0 end-0">
         <div
           class="${!this.visibleDropdown
             ? "hidden"
-            : ""} bg-white divide-y divide-gray-100 rounded-lg shadow w-full border mt-1"
+            : ""} bg-white divide-y divide-stone-100 rounded-lg shadow w-full border mt-1"
         >
           ${this.visibleOptions.length > 0 && this.visibleDropdown
-            ? html`<ul class="text-sm text-gray-700 overflow-auto max-h-[180px]">
+            ? html`<ul class="text-sm text-stone-700 overflow-auto max-h-[180px]">
                 ${this.visibleOptions.map((option) => {
                   const isProjectsType = this.name === "projects";
                   const name = isProjectsType ? option.name : option;
@@ -149,7 +155,7 @@ export class SearchableFilter extends LitWrapper {
                       type="button"
                       @click=${() => this._onSelect(name)}
                       class=${`${
-                        isSelected ? "bg-gray-100 opacity-50" : "cursor-pointer hover:bg-gray-100"
+                        isSelected ? "bg-stone-100 opacity-50" : "cursor-pointer hover:bg-stone-100"
                       } capitalize block w-full text-left px-${isProjectsType ? "3" : "4"} py-1`}
                       ?disabled="${isSelected}"
                     >
@@ -166,12 +172,12 @@ export class SearchableFilter extends LitWrapper {
                               />
                             </div>
                             <div class="flex flex-col justify-start min-w-0">
-                              <div class="truncate text-start text-xs/5 text-gray-700 font-medium">
+                              <div class="truncate text-start text-xs/5 text-stone-700 font-medium">
                                 ${name}
                               </div>
                               <div class="inline-flex">
                                 <div
-                                  class="truncate text-nowrap uppercase max-w-[100%] text-[0.65rem] font-medium text-gray-400"
+                                  class="truncate text-nowrap uppercase max-w-[100%] text-[0.65rem] font-medium text-stone-500/75"
                                 >
                                   ${option.foundation} ${option.maturity}
                                 </div>
@@ -181,7 +187,7 @@ export class SearchableFilter extends LitWrapper {
                         : html`<div class="flex items-center">
                             <div class="size-3 me-2">
                               ${isSelected
-                                ? html`<div class="svg-icon size-3 icon-check bg-gray-400"></div>`
+                                ? html`<div class="svg-icon size-3 icon-check bg-stone-400"></div>`
                                 : ""}
                             </div>
                             <div class="truncate text-[0.8rem]/6">${unnormalize(name)}</div>
@@ -190,7 +196,7 @@ export class SearchableFilter extends LitWrapper {
                   </li>`;
                 })}
               </ul>`
-            : html`<div class="px-8 py-4 text-sm/6 text-gray-600 italic">No ${this.name} found</div>`}
+            : html`<div class="px-8 py-4 text-sm/6 text-stone-600 italic">No ${this.name} found</div>`}
         </div>
       </div>
       ${this.selected.length > 0
@@ -207,7 +213,7 @@ export class SearchableFilter extends LitWrapper {
                         ${unnormalize(opt)}
                       </div>
                       <div
-                        class="svg-icon size-4 icon-close bg-gray-500 group-hover:bg-gray-800 shrink-0"
+                        class="svg-icon size-4 icon-close bg-stone-500 group-hover:bg-stone-800 shrink-0"
                       ></div>
                     </div>
                   </button>

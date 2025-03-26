@@ -41,7 +41,7 @@ export class MultiSelect extends LitWrapper {
   _filterOptions() {
     if (this.enteredValue.length > 0) {
       this.visibleOptions = this.options.filter((option) =>
-        option.toLowerCase().includes(this.enteredValue.toLowerCase()),
+        unnormalize(option).toLowerCase().includes(this.enteredValue.toLowerCase()),
       );
     } else {
       this.visibleOptions = this.options;
@@ -80,17 +80,17 @@ export class MultiSelect extends LitWrapper {
             ${this.selected.map(
               (option) =>
                 html`<span
-                  class="inline-flex items-center text-nowrap max-w-[100%] ps-2 pe-0.5 py-0.5 me-2 text-xs font-medium text-gray-800 bg-gray-100 rounded-full"
+                  class="inline-flex items-center text-nowrap max-w-[100%] ps-2 pe-0.5 py-0.5 me-2 text-xs font-medium text-stone-800 bg-stone-100 rounded-full"
                 >
                   <div class="flex items-center w-full">
                     <div class="truncate capitalize">${unnormalize(option)}</div>
                     <button
                       type="button"
                       @click=${() => this._onRemoveBadge(option)}
-                      class="inline-flex items-center p-1 ms-2 bg-transparent rounded-full hover:bg-gray-200"
+                      class="inline-flex items-center p-1 ms-2 bg-transparent rounded-full hover:bg-stone-200"
                       aria-label="Remove badge"
                     >
-                      <div class="svg-icon size-3 icon-close bg-gray-400 hover:bg-gray-900"></div>
+                      <div class="svg-icon size-3 icon-close bg-stone-400 hover:bg-stone-900"></div>
                       <span class="sr-only">Remove badge</span>
                     </button>
                   </div>
@@ -106,7 +106,7 @@ export class MultiSelect extends LitWrapper {
               autocorrect="off"
               autocapitalize="off"
               spellcheck="false"
-              class="flex flex-grow p-0 ps-1.5 rounded-md text-gray-900 max-w-full min-w-[80px] border-0 focus:ring-0 sm:text-sm/6"
+              class="flex flex-grow p-0 ps-1.5 rounded-md text-stone-900 max-w-full min-w-[80px] border-0 focus:ring-0 sm:text-sm/6"
             />
           </div>
         </div>
@@ -114,11 +114,11 @@ export class MultiSelect extends LitWrapper {
         <div
           class=${`${
             !this.visibleDropdown ? "hidden" : ""
-          } absolute start-0 z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-full border mt-1 ${
+          } absolute start-0 z-10 bg-white divide-y divide-stone-100 rounded-lg shadow w-full border mt-1 ${
             this.legend ? "top-10" : ""
           }`}
         >
-          <ul class="text-sm text-gray-700 overflow-x-auto max-h-[150px]">
+          <ul class="text-sm text-stone-700 overflow-x-auto max-h-[150px]">
             ${this.visibleOptions.map((option) => {
               const isSelected = this.selected.includes(option);
               return html`<li>
@@ -126,13 +126,13 @@ export class MultiSelect extends LitWrapper {
                   @click=${() => this._onClickOption(option)}
                   type="button"
                   class=${`${
-                    isSelected ? "bg-gray-100 opacity-50" : "cursor-pointer hover:bg-gray-100"
+                    isSelected ? "bg-stone-100 opacity-50" : "cursor-pointer hover:bg-stone-100"
                   } capitalize block w-full text-left px-4 py-2`}
                   ?disabled="${isSelected}"
                 >
                   <div class="flex items-center">
                     <div class="size-3 me-2">
-                      ${isSelected ? html`<div class="svg-icon size-3 icon-check bg-gray-400"></div>` : ""}
+                      ${isSelected ? html`<div class="svg-icon size-3 icon-check bg-stone-400"></div>` : ""}
                     </div>
                     <div class="truncate">${unnormalize(option)}</div>
                   </div>

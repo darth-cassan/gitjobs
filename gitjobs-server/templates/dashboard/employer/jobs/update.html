@@ -11,7 +11,7 @@
       hx-indicator="#dashboard-spinner, #save-spinner"
       hx-disabled-elt="button[type=submit], #cancel-button, #preview-button">
   <div class="space-y-12">
-    <div class="border-b border-gray-900/10 pb-12">
+    <div class="border-b border-stone-900/10 pb-12">
       {% call macros::form_title(title = "Job details", description = "Please add as many details about this job as possible. You can save it as a draft and come back later to finish it.") %}
 
       <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 md:grid-cols-6 max-w-5xl">
@@ -57,7 +57,7 @@
             {# Timezone start #}
             <div class="col-span-3">
               <div class="mt-2 grid grid-cols-1 relative">
-                <div class="absolute top-3 start-3 text-xs text-gray-500">Start</div>
+                <div class="absolute top-3 start-3 text-xs text-stone-500">Start</div>
                 <select id="tz_start"
                         name="tz_start"
                         class="select-primary ps-10 aligned-right">
@@ -74,7 +74,7 @@
             {# Timezone end #}
             <div class="col-span-3">
               <div class="mt-2 grid grid-cols-1 relative">
-                <div class="absolute top-3 start-3 text-xs text-gray-500">End</div>
+                <div class="absolute top-3 start-3 text-xs text-stone-500">End</div>
                 <select id="tz_end" name="tz_end" class="select-primary ps-10 aligned-right">
                   {% call macros::select_option(value = "", label = "", selected = job.tz_end|display_some) %}
                   {% for i in 0..25 %}
@@ -227,7 +227,7 @@
     </div>
 
     {# Salary section #}
-    <div class="border-b border-gray-900/10 pb-12">
+    <div class="border-b border-stone-900/10 pb-12">
       {% call macros::form_title(title = "Compensation", description = "This section includes the salary details and benefits.") %}
 
       <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 md:grid-cols-6 max-w-5xl">
@@ -323,6 +323,11 @@
             <select id="salary_currency" name="salary_currency" class="select-primary">
               {% call macros::select_option(value = "", label = "", selected = job.salary_currency|display_some) %}
               {% call macros::select_option(value = "USD", label = "USD - United States Dollar", selected = job.salary_currency|display_some) %}
+              {% call macros::select_option(value = "EUR", label = "EUR - Euro", selected = job.salary_currency|display_some) %}
+              {% call macros::select_option(value = "GBP", label = "GBP - British Pound Sterling", selected = job.salary_currency|display_some) %}
+              {% call macros::select_option(value = "CHF", label = "CHF - Swiss Franc", selected = job.salary_currency|display_some) %}
+              {% call macros::select_option(value = "CAD", label = "CAD - Canadian Dollar", selected = job.salary_currency|display_some) %}
+              {% call macros::select_option(value = "JPY", label = "JPY - Japanese Yen", selected = job.salary_currency|display_some) %}
             </select>
           </div>
         </div>
@@ -334,7 +339,11 @@
           <div class="mt-2 grid grid-cols-1">
             <select id="salary_period" name="salary_period" class="select-primary">
               {% call macros::select_option(value = "", label = "", selected = job.salary_period|display_some) %}
-              {% call macros::select_option(value = "annual", label = "Annual", selected = job.salary_period|display_some) %}
+              {% call macros::select_option(value = "year", label = "Year", selected = job.salary_period|display_some) %}
+              {% call macros::select_option(value = "month", label = "Month", selected = job.salary_period|display_some) %}
+              {% call macros::select_option(value = "week", label = "Week", selected = job.salary_period|display_some) %}
+              {% call macros::select_option(value = "day", label = "Day", selected = job.salary_period|display_some) %}
+              {% call macros::select_option(value = "hour", label = "Hour", selected = job.salary_period|display_some) %}
             </select>
           </div>
         </div>
@@ -352,7 +361,7 @@
     {# End salary section #}
 
     {# Open Source #}
-    <div class="border-b border-gray-900/10 pb-12">
+    <div class="border-b border-stone-900/10 pb-12">
       {% call macros::form_title(title = "Open Source", description = "Does this job involve working on open source projects? Does it offer time to contribute to upstream projects?") %}
 
       <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 md:grid-cols-6 max-w-6xl">
@@ -450,7 +459,7 @@
 
         {# Save button #}
         <button type="submit" class="btn-primary">
-          {% call macros::btn_spinner(id = "save-spinner", bg_color = "white", fill_color = "primary-300") %}
+          {% call macros::btn_spinner(id = "save-spinner", spinner_type = "2") %}
           Save
         </button>
         {# End save button #}

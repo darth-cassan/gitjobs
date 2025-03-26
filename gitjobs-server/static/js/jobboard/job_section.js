@@ -8,6 +8,10 @@ import { isSuccessfulXHRStatus } from "/static/js/common/common.js";
 
 export const applyButton = () => {
   const applyButton = document.getElementById("apply-button");
+  if (!applyButton) {
+    return;
+  }
+
   const applyUrl = applyButton.dataset.applyUrl;
   const userButton = document.getElementById("user-dropdown-button");
   const isUserLoggedIn = userButton.dataset.loggedIn;
@@ -24,7 +28,7 @@ export const applyButton = () => {
     if (applyUrl !== "") {
       const applyAnchor = document.createElement("a");
       applyAnchor.href = applyUrl;
-      applyAnchor.className = "btn-primary-outline w-full block mt-4 mb-6";
+      applyAnchor.className = "btn-primary w-full block mt-4 mb-6";
       applyAnchor.textContent = "Apply";
       applyAnchor.target = "_blank";
       applyAnchor.rel = "noopener noreferrer";

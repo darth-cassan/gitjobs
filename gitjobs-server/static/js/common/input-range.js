@@ -1,4 +1,4 @@
-import { html } from "https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js";
+import { html, createRef, ref } from "https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js";
 import { LitWrapper } from "/static/js/common/litWrapper.js";
 import { triggerActionOnForm } from "/static/js/jobboard/filters.js";
 
@@ -15,6 +15,8 @@ export class InputRange extends LitWrapper {
     legendsNumber: { type: Number },
     visibleTooltip: { type: Boolean },
   };
+
+  inputRef = createRef();
 
   constructor() {
     super();
@@ -84,10 +86,25 @@ export class InputRange extends LitWrapper {
     }
   }
 
+  async cleanRange() {
+    this.value = 0;
+    this.percentValue = 0;
+    this.offset = 0;
+    this.visibleTooltip = false;
+    const input = this.inputRef.value;
+    if (input) {
+      input.value = 0;
+    }
+
+    // Wait for the update to complete
+    await this.updateComplete;
+  }
+
   render() {
     return html`
       <div class="relative">
         <input
+          ${ref(this.inputRef)}
           form="${this.form}"
           name="${this.name}"
           type="range"
@@ -98,10 +115,10 @@ export class InputRange extends LitWrapper {
           max="${this.max}"
           step="${this.step}"
           value="${this.value}"
-          class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-900"
+          class="w-full h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-primary-300"
           style="background-image: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-color) ${this
-            .percentValue}%, rgb(229 231 235 / var(--tw-bg-opacity, 1)) ${this
-            .percentValue}%, rgb(229 231 235 / var(--tw-bg-opacity, 1)) 100%);"
+            .percentValue}%, rgb(231 229 228 / var(--tw-bg-opacity, 1)) ${this
+            .percentValue}%, rgb(231 229 228 / var(--tw-bg-opacity, 1)) 100%);"
         />
         <div
           role="tooltip"
@@ -120,11 +137,11 @@ export class InputRange extends LitWrapper {
           <ul class="flex justify-between w-full h-5">
             ${this.steps.map(
               (i) =>
-                html`<li class="flex justify-center relative text-xs text-gray-500">
+                html`<li class="flex justify-center relative text-xs text-stone-500">
                   <span class="absolute -start-[10px]">${this._prettyNumber(i)}</span>
                 </li>`,
             )}
-            <li class="flex justify-center relative text-xs text-gray-500">
+            <li class="flex justify-center relative text-xs text-stone-500">
               <span class="absolute -start-[15px]">${this._prettyNumber(this.max)}${this.unit}</span>
             </li>
           </ul>

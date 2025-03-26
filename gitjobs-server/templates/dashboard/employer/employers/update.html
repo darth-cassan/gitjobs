@@ -67,8 +67,8 @@
               <button id="remove-{{ member.member_id }}"
                       data-id="{{ member.member_id }}"
                       type="button"
-                      class="rounded-full bg-gray-100 hover:bg-gray-200 absolute top-1 end-1">
-                <div class="svg-icon size-5 bg-gray-400 hover:bg-gray-700 icon-close"></div>
+                      class="rounded-full bg-stone-100 hover:bg-stone-200 absolute top-1 end-1">
+                <div class="svg-icon size-5 bg-stone-400 hover:bg-stone-700 icon-close"></div>
               </button>
               {% let label = &format!("{} {} member", member.foundation, member.level) %}
               {% call macros::dropdown_card(name = member.name, label = label, logo_url = member.logo_url) %}
@@ -133,7 +133,7 @@
         <div class="form-label">Public</div>
         <label class="mt-2 inline-flex items-center cursor-pointer">
           {% call macros::toggle_checkbox(id = "public", checked = employer.public) %}
-          <span class="ms-3 text-sm font-medium text-gray-900">Display in employers listing</span>
+          <span class="ms-3 text-sm font-medium text-stone-900">Display in employers listing</span>
         </label>
         <p class="form-legend">
           Your company will be listed in the employers section of the site. This may help attracting more applicants to your jobs.
@@ -142,7 +142,7 @@
       {# End Public #}
     </div>
 
-    <div class="mt-12 flex items-center justify-end gap-x-6 border-t border-gray-900/10 pt-12">
+    <div class="mt-12 flex items-center justify-end gap-x-6 border-t border-stone-900/10 pt-12">
       {# Cancel button #}
       <button id="cancel-button"
               hx-get="/dashboard/employer"
@@ -155,7 +155,7 @@
       <div class="relative">
         {# Submit employer form button #}
         <button type="submit" class="btn-primary">
-          {% call macros::btn_spinner(id = "publish-spinner", bg_color = "white", fill_color = "primary-300") %}
+          {% call macros::btn_spinner(id = "publish-spinner", spinner_type = "2") %}
           Save
         </button>
         {# End submit employer form button #}
@@ -174,11 +174,13 @@
 
   const employerForm = document.getElementById('employer-form');
 
-  employerForm.addEventListener('htmx:afterOnLoad', (e) => {
+  employerForm.addEventListener('htmx:afterRequest', (e) => {
     // Check if the form is the employer form and not the input ts_query requesting locations
-    if (!isSuccessfulXHRStatus(e.detail.xhr.status)) {
-      window.scrollTo(0, 0);
-      showErrorAlert('Something went wrong updating the profile, please try again later.');
+    if (e.detail.elt.id === 'employer-form') {
+      if (!isSuccessfulXHRStatus(e.detail.xhr.status)) {
+        window.scrollTo(0, 0);
+        showErrorAlert('Something went wrong updating the profile, please try again later.');
+      }
     }
   });
 </script>

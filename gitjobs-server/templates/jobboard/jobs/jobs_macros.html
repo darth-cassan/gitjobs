@@ -2,7 +2,9 @@
 
 {# Filters #}
 {% macro filters(form, device = "desktop") %}
-  <div class="p-6 pt-5 flex flex-col space-y-5">
+  <div class="pt-5 px-6">{% call filters_title(text = "Type and location") %}</div>
+
+  <div class="p-6 pt-3 flex flex-col space-y-5">
     {# Job type #}
     <div>
       {% call filters_subtitle(text = "Job type") %}
@@ -45,17 +47,6 @@
     </div>
     {# End workplace #}
 
-    {# Location #}
-    <div>
-      {% call filters_subtitle(text = "Location") %}
-      {% if let Some(location) = filters.location %}
-        <search-location form="{{ form }}" device="{{ device }}" location_id="{{ location.location_id }}" city="{{ location.city }}" state="{{ location.state|display_some }}" country="{{ location.country }}" withDistance="true" distance="{{ filters.max_distance|display_some }}" size="small"></search-location>
-      {% else %}
-        <search-location form="{{ form }}" device="{{ device }}" withDistance="true" distance="{{ filters.max_distance|display_some }}" size="small"></search-location>
-      {% endif %}
-    </div>
-    {# End location #}
-
     <div class="grid grid-cols-2 w-full gap-2">
       {# Seniority #}
       <div>
@@ -64,7 +55,7 @@
           <select form="{{ form }}"
                   data-trigger-form="true"
                   name="seniority"
-                  class="select-primary py-0.5 text-[0.8rem]/6 text-gray-500">
+                  class="select-primary py-0.5 text-[0.8rem]/6 text-stone-500">
             {% call macros::select_option(value = "", label = "Any", selected = filters.seniority|display_some) %}
             {% call macros::select_option(value = "entry", label = "Entry", selected = filters.seniority|display_some) %}
             {% call macros::select_option(value = "junior", label = "Junior", selected = filters.seniority|display_some) %}
@@ -83,7 +74,7 @@
           <select form="{{ form }}"
                   name="date_range"
                   data-trigger-form="true"
-                  class="select-primary py-0.5 text-[0.8rem]/6 text-gray-500">
+                  class="select-primary py-0.5 text-[0.8rem]/6 text-stone-500">
             {% call macros::select_option(value = "last-day", label = "Last day", selected = filters.date_range|display_some_or("last30-days")) %}
             {% call macros::select_option(value = "last3-days", label = "Last 3 days", selected = filters.date_range|display_some_or("last30-days")) %}
             {% call macros::select_option(value = "last7-days", label = "Last week", selected = filters.date_range|display_some_or("last30-days")) %}
@@ -93,16 +84,27 @@
       </div>
       {# End published date #}
     </div>
+
+    {# Location #}
+    <div>
+      {% call filters_subtitle(text = "Location") %}
+      {% if let Some(location) = filters.location %}
+        <search-location form="{{ form }}" device="{{ device }}" location_id="{{ location.location_id }}" city="{{ location.city }}" state="{{ location.state|display_some }}" country="{{ location.country }}" withDistance="true" distance="{{ filters.max_distance|display_some }}" size="small"></search-location>
+      {% else %}
+        <search-location form="{{ form }}" device="{{ device }}" withDistance="true" distance="{{ filters.max_distance|display_some }}" size="small"></search-location>
+      {% endif %}
+    </div>
+    {# End location #}
   </div>
 
   {# Open source section #}
-  <div class="pt-6 px-6 border-t border-gray-100">{% call filters_title(text = "Open source") %}</div>
+  <div class="pt-6 mt-2 px-6 border-t border-stone-100">{% call filters_title(text = "Open source") %}</div>
 
   <div class="p-6 pt-3 flex flex-col space-y-5">
     {# Projects #}
     <div>
       {% call filters_subtitle(text = "Projects you'd like to work on") %}
-      <searchable-filter name="projects" options="{{ filters_options.projects|json }}" form="{{ device }}-jobs-form" {%- if let Some(filters_projects) = filters.projects %}selected="{{ filters_projects|json }}"{%- endif -%}></searchable-filter>
+      <searchable-filter name="projects" form="{{ device }}-jobs-form" {%- if let Some(filters_projects) = filters.projects %}selected="{{ filters_projects|json }}"{%- endif -%}></searchable-filter>
     </div>
     {# End projects #}
 
@@ -128,12 +130,12 @@
 {# End open source section #}
 
 {# Compensation section #}
-<div class="pt-6 px-6 border-t border-gray-100">{% call filters_title(text = "Compensation") %}</div>
+<div class="pt-6 px-6 border-t border-stone-100">{% call filters_title(text = "Compensation") %}</div>
 
 <div class="p-6 pt-3 flex flex-col space-y-5">
   {# Salary #}
   <div>
-    {% call filters_subtitle(text = "Minimum salary (annual)") %}
+    {% call filters_subtitle(text = "Minimum salary (USD / year)") %}
     <div class="mt-1">
       <input-range form="{{ form }}" name="salary_min" value="{{ filters.salary_min|display_some_or(0) }}" max="250000" step="5000" unit="K" prefix="$" legendsNumber="6">
     </div>
@@ -153,13 +155,13 @@
 
 {# Filters title #}
 {% macro filters_title(text) %}
-  <div class="text-xs/6 text-gray-400 uppercase">{{ text }}</div>
+  <div class="text-xs/6 text-stone-500/75 uppercase">{{ text }}</div>
 {% endmacro filters_title %}
 {# End filters title #}
 
 {# Filters subtitle #}
 {% macro filters_subtitle(text) %}
-  <div class="font-semibold text-[0.8rem]/6">{{ text }}</div>
+  <div class="font-semibold text-[0.8rem]/8">{{ text }}</div>
 {% endmacro filters_subtitle %}
 {# End filters subtitle #}
 
@@ -187,8 +189,8 @@
            {%- if let Some(active_filters) = active_filters -%} {%- if active_filters.contains(value) -%}checked{%- endif -%} {%- endif %}
            {% if required %}required{% endif %}>
     <label for="{%- if !device.is_empty() -%}{{ device }}-{%- endif -%}{{ name }}-{{ value }}"
-           class="inline-flex items-center justify-center w-full px-2 py-1 text-gray-500 space-x-2 bg-white border rounded-md cursor-pointer select-none peer-checked:border-primary-500 hover:text-gray-600 peer-checked:text-primary-500 hover:bg-gray-50">
-      <div class="svg-icon size-3 icon-{{ icon }} bg-gray-500 cursor-pointer group-has-[input:checked]:bg-primary-500">
+           class="inline-flex items-center justify-center w-full px-2 py-1 text-stone-500 space-x-2 bg-white border rounded-md cursor-pointer select-none peer-checked:border-primary-500 hover:text-stone-600 peer-checked:text-primary-500 hover:bg-stone-50">
+      <div class="svg-icon size-3 icon-{{ icon }} bg-stone-500 cursor-pointer group-has-[input:checked]:bg-primary-500">
       </div>
       <div class="text-[0.8rem] text-center text-nowrap">{{ label }}</div>
     </label>
