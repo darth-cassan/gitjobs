@@ -7,7 +7,8 @@
           content="Jobs platform for communities and organizations">
     <meta name="keywords" content="community, organization, jobs, job">
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale = 1, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#f9fafb" />
     <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
 
@@ -186,15 +187,18 @@
     </script>
     <script type="module">
       import {
-        shouldDisplayJobModal,
-        toggleModalVisibility,
-        getParamFromQueryString
+        toggleModalVisibility
       } from '/static/js/common/common.js';
+
       window.addEventListener("popstate", (event) => {
         if (event.state && event.state.modal_preview !== undefined) {
           if (event.state.modal_preview) {
             toggleModalVisibility('preview-modal', "open");
           } else {
+            toggleModalVisibility('preview-modal', "close");
+          }
+        } else {
+          if (document.getElementById('preview-modal').dataset.open === "true") {
             toggleModalVisibility('preview-modal', "close");
           }
         }
