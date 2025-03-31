@@ -1,6 +1,6 @@
-import { html } from "https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js";
+import { html } from "/static/vendor/js/lit-all.v3.2.1.min.js";
 import { unnormalize } from "/static/js/common/common.js";
-import { LitWrapper } from "/static/js/common/litWrapper.js";
+import { LitWrapper } from "/static/js/common/lit-wrapper.js";
 import { getBenefits, getSkills } from "/static/js/common/data.js";
 
 export class MultiSelect extends LitWrapper {

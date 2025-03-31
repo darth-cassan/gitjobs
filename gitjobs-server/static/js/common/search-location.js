@@ -1,5 +1,5 @@
-import { html, nothing } from "https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js";
-import { LitWrapper } from "/static/js/common/litWrapper.js";
+import { html, nothing } from "/static/vendor/js/lit-all.v3.2.1.min.js";
+import { LitWrapper } from "/static/js/common/lit-wrapper.js";
 import { debounce } from "/static/js/common/common.js";
 import { triggerActionOnForm } from "/static/js/jobboard/filters.js";
 
