@@ -9,6 +9,8 @@ use uuid::Uuid;
 
 use crate::templates::{
     dashboard::employer::jobs::JobSummary,
+    filters,
+    helpers::{DATE_FORMAT, build_dashboard_image_url},
     misc::Location,
     pagination::{NavigationLinks, Pagination},
 };
@@ -23,6 +25,16 @@ pub(crate) struct ApplicationsPage {
     pub filters: Filters,
     pub filters_options: FiltersOptions,
     pub navigation_links: NavigationLinks,
+}
+
+impl ApplicationsPage {
+    /// Get selected job.
+    pub(crate) fn selected_job(&self) -> Option<&JobSummary> {
+        if let Some(job_id) = self.filters.job_id {
+            return self.filters_options.jobs.iter().find(|j| j.job_id == job_id);
+        }
+        None
+    }
 }
 
 // Types.
