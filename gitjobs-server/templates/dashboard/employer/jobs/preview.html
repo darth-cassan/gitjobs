@@ -7,7 +7,7 @@
       <div class="flex justify-center items-center size-12 md:size-14 shrink-0">
         {% if let Some(logo_id) = employer.logo_id %}
           {% let logo = &self::build_dashboard_image_url(logo_id, "small") %}
-          <img class="size-auto"
+          <img class="size-12 md:size-14 object-contain"
                height="auto"
                width="auto"
                src="{{ logo }}"
@@ -42,7 +42,7 @@
                alt="{{ member.foundation }} logo"
                height="auto"
                width="auto"
-               class="size-auto">
+               class="size-10 object-contain">
         </div>
         <div class="flex flex-col justify-start min-w-0">
           <div class="truncate text-start text-stone-700 font-medium">{{ member.name }}</div>
@@ -151,12 +151,12 @@
   {# End timezone #}
 
   {# Open source #}
-  {% call job_details_subheading(content = "Time working on open source") %}
+  {% call job_details_subheading(content = "Time working on open source", content_short = "Open source time") %}
   {% call badge_percentage_bar(percentage = job.open_source|display_some_or("0")) %}
   {# End open source #}
 
   {# Upstream commitment #}
-  {% call job_details_subheading(content = "Time working on upstream projects") %}
+  {% call job_details_subheading(content = "Time working on upstream projects", content_short = "Upstream projects time") %}
   {% call badge_percentage_bar(percentage = job.upstream_commitment|display_some_or("0"), type = "upstream_commitment") %}
   {# End Upstream commitment #}
 
@@ -167,7 +167,7 @@
       {% for p in projects %}
         <div class="border border-stone-200 rounded-lg p-2 text-sm/5 bg-white w-full">
           {% let label = &format!("{} {}", p.foundation, p.maturity) %}
-          {% call macros::dropdown_card(name = p.name, label = label, logo_url = p.logo_url, line_height = 5) %}
+          {% call macros::dropdown_card(name = p.name, label = label, logo_url = p.logo_url, font_size = "text-[0.75rem]/5 text-xs/5") %}
         </div>
       {% endfor %}
     </div>
@@ -284,8 +284,15 @@
 {# End content heading #}
 
 {# Job details subheading #}
-{% macro job_details_subheading(content, extra_styles = "") %}
-  <div class="text-xs/6 text-stone-500/75 my-0 md:mb-1 md:mt-4 {{ extra_styles }}">{{ content }}</div>
+{% macro job_details_subheading(content, content_short = "", extra_styles = "") %}
+  <div class="text-xs/6 text-stone-500/75 my-0 md:mb-1 md:mt-4 {{ extra_styles }}">
+    {% if content_short.is_empty() %}
+      {{ content }}
+    {% else %}
+      <span class="hidden md:inline-flex xl:hidden">{{ content_short }}</span>
+      <span class="inline-flex md:hidden xl:inline-flex">{{ content }}</span>
+    {% endif %}
+  </div>
 {% endmacro job_details_subheading %}
 {# End job details subheading #}
 
