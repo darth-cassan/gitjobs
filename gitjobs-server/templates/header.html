@@ -39,7 +39,7 @@
          hx-boost="true">
       <button class="relative group rounded-full cursor-pointer bg-white border text-xl border-primary-500 text-primary-600 size-[38px] p-0.5 overflow-hidden"
               disabled>
-        {% call macros::btn_spinner(id = "user-spinner", size = "[2.35rem]", spinner_type = "5", htmx = false) %}
+        {% call macros::btn_spinner(id = "user-spinner", size = "size-[2.35rem]", spinner_type = "5", htmx = false) %}
         <div class="svg-icon size-4 mx-auto bg-primary-500 icon-user"></div>
       </button>
     </div>
@@ -110,6 +110,8 @@
         </li>
         <li class="border-t border-stone-200 mt-2 pt-2">
           <a href="/log-out"
+             hx-boost="false"
+             target="_self"
              class="inline-block w-full text-start px-4 py-2 hover:bg-stone-100">
             <div class="flex items-center">
               <div class="svg-icon size-4 icon-logout bg-stone-600"></div>

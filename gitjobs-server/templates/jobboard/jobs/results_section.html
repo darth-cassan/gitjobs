@@ -1,6 +1,6 @@
 {% import "macros.html" as macros %}
 {% import "jobboard/jobs/jobs_macros.html" as jobs_macros %}
-{% import "dashboard/employer/jobs/preview.html" as macros_preview %}
+{% import "misc/job_preview.html" as macros_preview %}
 
 <div class="flex flex-col mt-5 md:mt-7 space-y-4">
   {% if jobs.len() == 0 %}
@@ -104,7 +104,7 @@
                 </div>
 
                 {# Published date #}
-                <div class="truncate leading-[0.7rem] md:leading-3 text-[0.7rem] md:text-xs font-semibold tracking-wide uppercase">
+                <div class="truncate leading-[0.7rem] w-[50px] md:leading-3 text-[0.7rem] md:text-xs font-semibold tracking-wide uppercase">
                   {{ job.published_at.format(DATE_FORMAT_3) }}
                 </div>
                 {# End published date #}
@@ -115,7 +115,7 @@
               <div class="flex items-center space-x-4 min-w-0">
                 {# Title #}
                 <div class="leading-4 md:leading-normal text-[0.8rem] md:text-base font-stretch-condensed font-medium text-stone-900 truncate mt-1 md:mt-0">
-                  {{ job.title }}
+                  {{ job.title|truncate(45) }}
                 </div>
                 {# End title #}
 
