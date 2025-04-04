@@ -1,5 +1,5 @@
 {# Spinner -#}
-{% macro spinner(size = "size-4", spinner_type = "1", extra_styles = "") %}
+{% macro spinner(size = "size-4", spinner_type = "1", extra_styles = "") -%}
   <div role="status" class="flex {{ size }} {{ extra_styles }}">
     <img src="/static/images/spinner/spinner_{{ spinner_type }}.svg"
          height="auto"
@@ -8,23 +8,22 @@
          class="size-auto animate-spin" />
     <span class="sr-only">Loading...</span>
   </div>
-{% endmacro spinner %}
+{% endmacro spinner -%}
 {# End spinner -#}
 
 {# Button spinner #}
-{% macro btn_spinner(id, size = "size-5", spinner_type = "1", htmx = true) %}
+{% macro btn_spinner(id, size = "size-5", spinner_type = "1", htmx = true) -%}
   <div id="{{ id }}"
        class="top-0 start-0 bottom-0 end-0 bg-inherit absolute {%- if htmx %} hx-spinner{%- endif -%}">
     <div class="flex items-center justify-center h-full w-full">
-      {% call spinner(size = size, spinner_type = spinner_type) %}
+      {% call spinner(size = size, spinner_type = spinner_type) -%}
     </div>
   </div>
-
-{% endmacro btn_spinner %}
+{% endmacro btn_spinner -%}
 {# End button spinner #}
 
 {# Search member #}
-{% macro search_member(member_id = "", member_name = "", member_level = "", member_foundation = "", member_logo_url = "") %}
+{% macro search_member(member_id = "", member_name = "", member_level = "", member_foundation = "", member_logo_url = "") -%}
   <div class="mt-2 relative">
     <div class="absolute top-2.5 start-0 flex items-center ps-3 pointer-events-none">
       <div class="svg-icon size-4 icon-search bg-stone-300"></div>
@@ -65,7 +64,7 @@
            name="member[logo_url]"
            id="member_logo_url"
            value="{{ member_logo_url }}">
-    <div id="member-spinner" class="hx-spinner absolute end-10 top-1">{% call spinner(size = "size-5") %}</div>
+    <div id="member-spinner" class="hx-spinner absolute end-10 top-1">{% call spinner(size = "size-5") -%}</div>
     <div class="absolute end-1.5 top-1.5 peer-placeholder-shown:hidden">
       <button id="clean-member" type="button" class="cursor-pointer mt-[2px]">
         <div class="svg-icon size-5 bg-stone-400 hover:bg-stone-700 icon-close"></div>
@@ -133,11 +132,11 @@
       document.getElementById(contentData).innerHTML = "";
     });
   </script>
-{% endmacro search_member %}
+{% endmacro search_member -%}
 {# End search member #}
 
 {# Search project #}
-{% macro search_project(id = "projects", mini = false) %}
+{% macro search_project(id = "projects", mini = false) -%}
   <div class="mt-2 relative">
     <div class="absolute top-2.5 start-0 flex items-center ps-3 pointer-events-none">
       <div class="svg-icon size-4 icon-search bg-stone-300"></div>
@@ -158,7 +157,9 @@
            autocapitalize="off"
            spellcheck="false"
            autocomplete="off">
-    <div id="{{ id }}-spinner" class="hx-spinner absolute end-10 top-1">{% call spinner(size = "size-5") %}</div>
+    <div id="{{ id }}-spinner" class="hx-spinner absolute end-10 top-1">
+      {% call spinner(size = "size-5") -%}
+    </div>
     <div class="absolute end-1.5 top-1.5 peer-placeholder-shown:hidden">
       <button id="clean-{{ id }}" type="button" class="cursor-pointer mt-[2px]">
         <div class="svg-icon size-5 bg-stone-400 hover:bg-stone-700 icon-close"></div>
@@ -230,26 +231,26 @@
       document.getElementById(contentData).innerHTML = "";
     });
   </script>
-{% endmacro search_project %}
+{% endmacro search_project -%}
 {# End search project #}
 
 {# Job status badge -#}
-{% macro job_status_badge(status, size = "text-xs") %}
+{% macro job_status_badge(status, size = "text-xs") -%}
   {# djlint:off H008 #}
-  {% match status %}
-  {% when JobStatus::Archived %}
+  {% match status -%}
+  {% when JobStatus::Archived -%}
   <span class='bg-orange-100 text-orange-800 {{ size }} {%- if size == "xs" %} px-2.5 py-0.5 {%- else %} px-3 py-1 {%- endif %} rounded-full capitalize tracking-wide'>{{ status }}</span>
-  {% when JobStatus::Draft %}
+  {% when JobStatus::Draft -%}
   <span class='bg-blue-100 text-blue-800 {{ size }} {%- if size == "xs" %} px-2.5 py-0.5 {%- else %} px-3 py-1 {%- endif %} rounded-full capitalize tracking-wide'>{{ status }}</span>
-  {% when JobStatus::Published %}
+  {% when JobStatus::Published -%}
   <span class='bg-green-100 text-green-800 {{ size }} {%- if size == "xs" %} px-2.5 py-0.5 {%- else %} px-3 py-1 {%- endif %} rounded-full capitalize tracking-wide'>{{ status }}</span>
-{% endmatch %}
+{% endmatch -%}
 {# djlint:on H008 #}
-{% endmacro job_status_badge %}
+{% endmacro job_status_badge -%}
 {# End job status badge -#}
 
 {# Toggle checkbox #}
-{% macro toggle_checkbox(id, checked = false) %}
+{% macro toggle_checkbox(id, checked = false) -%}
   <input id="toggle_{{ id }}"
          name="toggle_{{ id }}"
          value="{{ id }}"
@@ -265,45 +266,47 @@
       document.getElementById('{{ id }}').value = document.getElementById('toggle_{{ id }}').checked;
     });
   </script>
-{% endmacro toggle_checkbox %}
+{% endmacro toggle_checkbox -%}
 {# End toggle checkbox #}
 
 {# Select option #}
-{% macro select_option(value, label, selected = "", disabled = false) %}
+{% macro select_option(value, label, selected = "", disabled = false) -%}
   <option value="{{ value }}"
           {% if value == selected|ref %}selected{% endif %}
           {% if disabled %}disabled{% endif %}>{{ label }}</option>
-{% endmacro select_option %}
+{% endmacro select_option -%}
 {# End select option #}
 
 {# Badge #}
-{% macro badge(content, content_styles = "", icon = "") %}
+{% macro badge(content, content_styles = "", icon = "") -%}
   <div class="inline-flex bg-stone-100 text-stone-800 text-xs/4 md:text-sm/4 font-medium px-2.5 py-1.5 rounded-full border border-stone-200">
     <div class="flex items-center">
-      {% if !icon.is_empty() %}
+      {% if !icon.is_empty() -%}
         <div class="me-2">
           <div class="svg-icon size-4 icon-{{ icon }} bg-stone-500"></div>
         </div>
-      {% endif %}
+      {% endif -%}
       <div class="capitalize text-nowrap {{ content_styles }}">{{ content }}</div>
     </div>
   </div>
-{% endmacro badge %}
+{% endmacro badge -%}
 {# End badge #}
 
 {# Form title #}
-{% macro form_title(title, description = "") %}
+{% macro form_title(title, description = "") -%}
   <div class="text-xl lg:text-2xl font-medium text-stone-900">{{ title }}</div>
-  {% if !description.is_empty() %}<p class="mt-1 text-sm/6 text-stone-500">{{ description }}</p>{% endif %}
-{% endmacro form_title %}
+  {% if !description.is_empty() -%}
+    <p class="mt-1 text-sm/6 text-stone-500">{{ description }}</p>
+  {% endif -%}
+{% endmacro form_title -%}
 {# End form title #}
 
 {# Radio box #}
-{% macro radio_box(name, value, label, icon, checked = "", required = false) %}
+{% macro radio_box(name, value, label, icon, checked = "", required = false) -%}
   <div class="flex items-center px-3 py-2 border border-stone-200 rounded-md">
     <div class="hidden lg:block svg-icon size-4 icon-{{ icon }} bg-stone-600 cursor-pointer"></div>
     <label for="{{ name }}-{{ value }}"
-           class="ms-2 text-xs lg:text-sm text-stone-900 flex-grow cursor-pointer">{{ label }}</label>
+           class="ms-2 text-xs lg:text-sm text-stone-900 grow cursor-pointer">{{ label }}</label>
     <input id="{{ name }}-{{ value }}"
            type="radio"
            value="{{ value }}"
@@ -312,13 +315,12 @@
            {% if value == checked %}checked{% endif %}
            {% if required %}required{% endif %}>
   </div>
-{% endmacro radio_box %}
+{% endmacro radio_box -%}
 {# End radio box #}
 
 {# Form image #}
-{% macro images_form(label, name, icon = "company", value = "", url_image = "") %}
-  {% let empty_image = value.is_empty() %}
-
+{% macro images_form(label, name, icon = "company", value = "", url_image = "") -%}
+  {% let empty_image = value.is_empty() -%}
   {# Images form #}
   <form id="images-form"
         hx-post="/dashboard/images"
@@ -331,22 +333,22 @@
     <div class="mt-3 flex items-stretch gap-x-5">
       <div class="relative flex items-center size-24 min-w-24 bg-stone-200/50 rounded-xl overflow-hidden">
         <div id="images-spinner" class="hx-spinner absolute z-10 start-5 top-5">
-          {% call spinner(size = "size-14", spinner_type = "4") %}
+          {% call spinner(size = "size-14", spinner_type = "4") -%}
         </div>
         <div id="image-container" class="relative w-100 h-100 flex mx-auto">
-          {# Image #}
+          {# Image -#}
           <img id="image"
                src="{{ url_image }}"
                alt="Image"
                height="auto"
                width="auto"
                class="size-[86px] object-contain rounded-lg m-auto {%- if empty_image %} hidden{%- endif -%}">
-          {# End image #}
-          {# Placeholder image #}
+          {# End image -#}
+          {# Placeholder image -#}
           <div id="placeholder-image"
                class="svg-icon size-20 icon-{{ icon }} bg-gray-500 m-auto {%- if !empty_image %} hidden{%- endif -%}">
           </div>
-          {# End placeholder image #}
+          {# End placeholder image -#}
         </div>
       </div>
 
@@ -374,11 +376,11 @@
       </div>
     </div>
   </form>
-  {# End images form #}
+  {# End images form -#}
 
-  {# Input hidden #}
+  {# Input hidden -#}
   <input id="{{ name }}" type="hidden" name="{{ name }}" value="{{ value }}">
-  {# End input hidden #}
+  {# End input hidden -#}
 
   <script type="module">
     import {
@@ -419,11 +421,11 @@
       image.classList.add('hidden');
     });
   </script>
-{% endmacro images_form %}
+{% endmacro images_form -%}
 {# End form image #}
 
 {# Dropdown card #}
-{% macro dropdown_card(name, label, logo_url, font_size = "text-xs/6") %}
+{% macro dropdown_card(name, label, logo_url, font_size = "text-xs/6") -%}
   <div class="flex items-center space-x-3">
     <div class="flex justify-center items-center shrink-0 size-8 lg:size-10 shrink-0">
       <img loading="lazy"
@@ -442,11 +444,11 @@
       </div>
     </div>
   </div>
-{% endmacro dropdown_card %}
+{% endmacro dropdown_card -%}
 {# End dropdown card #}
 
 {# Alert box #}
-{% macro alert_box(content, title = "") %}
+{% macro alert_box(content, title = "") -%}
   <div class="p-10 md:p-14">
     <div class="border border-primary-300 p-10 text-sm text-stone-800 rounded-lg bg-primary-50/20 text-center"
          role="alert">
@@ -454,26 +456,26 @@
       {{ content }}
     </div>
   </div>
-{% endmacro alert_box %}
+{% endmacro alert_box -%}
 {# End alert box #}
 
 {# Alerts #}
 {# djlint:off #}
-{% macro alerts(messages) %}
+{% macro alerts(messages) -%}
   <script type="module">
     import { showErrorAlert, showSuccessAlert } from '/static/js/common/alerts.js';
 
-    {% for message in messages %}
-      {% match message.level %}
-        {% when Level::Success %}
+    {% for message in messages -%}
+      {% match message.level -%}
+        {% when Level::Success -%}
           showSuccessAlert('{{ message }}');
-        {% when Level::Error %}
+        {% when Level::Error -%}
           showErrorAlert('{{ message }}');
-        {% when _ %}
+        {% when _ -%}
           {# Do nothing #}
-      {% endmatch %}
-    {% endfor %}
+      {% endmatch -%}
+    {% endfor -%}
 </script>
-{% endmacro alerts %}
+{% endmacro alerts -%}
 {# djlint:on #}
 {# End alerts #}
