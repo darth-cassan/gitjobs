@@ -18,30 +18,30 @@
     </script>
   </div>
   {# End mobile filters button -#}
-  {% call macros::form_title(title = "Moderation pending jobs") -%}
+  {% call macros::form_title(title = "Live jobs") -%}
 </div>
 
-{# Pending jobs Table -#}
-{% call moderator_macros::jobs_table(jobs = jobs, kind = "pending") -%}
-{# End pending jobs Table -#}
+{# Live jobs Table -#}
+{% call moderator_macros::jobs_table(jobs = jobs) -%}
+{# End live jobs Table -#}
 
-{# Mobile pending jobs cards -#}
+{# Mobile live jobs cards -#}
 <div class="flex flex-col space-y-4 md:hidden mt-6">
   {% if jobs.is_empty() -%}
     <div class="border border-primary-500 rounded-lg mt-10 p-5 bg-primary-50/20"
          role="alert">
       <div class="text-lg mb-6">
-        <div>There are no moderation pending jobs at the moment.</div>
+        <div>There are no live jobs at the moment.</div>
       </div>
       <p class="text-stone-700">Thanks for checking, please come back later :)</p>
     </div>
   {% else -%}
     {% for job in jobs -%}
-      {% call moderator_macros::mobile_job_card(job = job, kind = "pending") -%}
+      {% call moderator_macros::mobile_job_card(job = job) -%}
     {% endfor -%}
   {% endif -%}
 </div>
-{# End mobile pending jobs cards -#}
+{# End mobile live jobs cards -#}
 
 {# Preview modal -#}
 {% call moderator_macros::preview_modal() -%}
