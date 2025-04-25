@@ -11,6 +11,7 @@ use axum::{
     response::{Html, IntoResponse},
 };
 use chrono::Duration;
+use tower_sessions::Session;
 use tracing::instrument;
 
 use crate::{
@@ -25,6 +26,8 @@ use crate::{
     },
 };
 
+use super::auth::AUTH_PROVIDER_KEY;
+
 /// Handler that returns the not found page.
 #[instrument(skip_all, err)]
 pub(crate) async fn not_found(
@@ -32,6 +35,7 @@ pub(crate) async fn not_found(
 ) -> Result<impl IntoResponse, HandlerError> {
     // Prepare template
     let template = misc::NotFoundPage {
+        auth_provider: None,
         cfg: cfg.into(),
         page_id: PageId::NotFound,
         user: User::default(),
@@ -105,10 +109,14 @@ pub(crate) async fn search_projects(
 
 /// Handler that returns the header user menu section.
 #[instrument(skip_all, err)]
-pub(crate) async fn user_menu_section(auth_session: AuthSession) -> Result<impl IntoResponse, HandlerError> {
+pub(crate) async fn user_menu_section(
+    auth_session: AuthSession,
+    session: Session,
+) -> Result<impl IntoResponse, HandlerError> {
     // Prepare template
     let template = UserMenuSection {
         user: auth_session.into(),
+        auth_provider: session.get(AUTH_PROVIDER_KEY).await?,
     };
 
     Ok(Html(template.render()?))
