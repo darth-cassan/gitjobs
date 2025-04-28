@@ -1,8 +1,11 @@
 //! Some helpers for templates.
 
-use std::sync::LazyLock;
+use std::{collections::HashMap, sync::LazyLock, time::Duration};
 
+use anyhow::Result;
+use cached::proc_macro::cached;
 use regex::Regex;
+use tracing::{debug, warn};
 use uuid::Uuid;
 
 use crate::templates::dashboard::employer::employers::EmployerSummary;
@@ -85,8 +88,7 @@ pub(crate) fn normalize(s: &str) -> String {
 }
 
 /// Convert salary to USD yearly.
-/// TODO(tegioz): refresh exchange rates automatically.
-pub(crate) fn normalize_salary(
+pub(crate) async fn normalize_salary(
     salary: Option<i64>,
     currency: Option<&String>,
     period: Option<&String>,
@@ -97,19 +99,14 @@ pub(crate) fn normalize_salary(
     };
 
     // Convert to USD.
-    let conversion_rate = match currency.to_lowercase().as_str() {
-        "usd" => 1.0,
-        "eur" => 1.08,
-        "gbp" => 1.29,
-        "cad" => 0.7,
-        "chf" => 1.13,
-        "jpy" => 0.0066,
-        _ => {
-            return None; // Unsupported currency.
-        }
+    let exchange_rates = get_exchange_rates().await;
+    let Some(exchange_rate) = exchange_rates.get(&currency.to_lowercase()) else {
+        warn!(currency, "exchange rate not found");
+        return None;
     };
+
     #[allow(clippy::cast_precision_loss)]
-    let salary_usd = salary as f64 * conversion_rate;
+    let salary_usd = salary as f64 / exchange_rate;
 
     // Convert to yearly salary.
     let salary_usd_year = match period.as_str() {
@@ -125,4 +122,45 @@ pub(crate) fn normalize_salary(
 
     #[allow(clippy::cast_possible_truncation)]
     Some(salary_usd_year as i64)
+}
+
+/// Return current exchange rates, defaulting to backup ones if the current
+/// ones aren't available. Rates will be cached for 1 day.
+#[cached(time = 86400, sync_writes = "by_key")]
+async fn get_exchange_rates() -> HashMap<String, f64> {
+    // Exchange rates as of 2024-04-28.
+    let backup_exchange_rates = HashMap::from([
+        ("usd".to_string(), 1.0),
+        ("eur".to_string(), 0.878),
+        ("gbp".to_string(), 0.751),
+        ("cad".to_string(), 1.386),
+        ("chf".to_string(), 0.828),
+        ("jpy".to_string(), 143.658),
+    ]);
+
+    // Download current exchange rates.
+    let Ok(exchange_rates) = download_exchange_rates().await else {
+        warn!("error downloading current exchange rates, using backup ones");
+        return backup_exchange_rates;
+    };
+
+    exchange_rates
+}
+
+/// Download current exchange rates.
+#[tracing::instrument(skip_all, err)]
+async fn download_exchange_rates() -> Result<HashMap<String, f64>> {
+    debug!("downloading current exchange rates");
+
+    let url = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json";
+    let client = reqwest::Client::builder().timeout(Duration::from_secs(5)).build()?;
+    let exchange_rates: ExchangeRatesApiResponse = client.get(url).send().await?.json().await?;
+
+    Ok(exchange_rates.usd)
+}
+
+/// Response from the exchange rates API.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize)]
+struct ExchangeRatesApiResponse {
+    pub usd: HashMap<String, f64>,
 }
