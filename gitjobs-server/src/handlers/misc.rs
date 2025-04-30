@@ -62,7 +62,7 @@ pub(crate) async fn search_locations(
     // Prepare response headers
     let headers = prepare_headers(Duration::hours(1), &[])?;
 
-    Ok((headers, Json(locations).into_response()).into_response())
+    Ok((headers, Json(locations)).into_response())
 }
 
 /// Handler that returns the members search results.
@@ -72,18 +72,15 @@ pub(crate) async fn search_members(
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, HandlerError> {
     // Get members from the database
-    let Some(name) = query.get("name") else {
-        return Ok((StatusCode::BAD_REQUEST, "missing name parameter").into_response());
+    let (Some(foundation), Some(member)) = (query.get("foundation"), query.get("member")) else {
+        return Ok((StatusCode::BAD_REQUEST, "missing foundation or member parameter").into_response());
     };
-    let members = db.search_members(name).await?;
-
-    // Prepare template
-    let template = misc::Members { members };
+    let members = db.search_members(foundation, member).await?;
 
     // Prepare response headers
     let headers = prepare_headers(Duration::hours(1), &[])?;
 
-    Ok((headers, Html(template.render()?)).into_response())
+    Ok((headers, Json(members)).into_response())
 }
 
 /// Handler that returns the projects search results.
@@ -93,18 +90,15 @@ pub(crate) async fn search_projects(
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, HandlerError> {
     // Get projects from the database
-    let Some(name) = query.get("name") else {
-        return Ok((StatusCode::BAD_REQUEST, "missing name parameter").into_response());
+    let (Some(foundation), Some(project)) = (query.get("foundation"), query.get("project")) else {
+        return Ok((StatusCode::BAD_REQUEST, "missing foundation or project parameter").into_response());
     };
-    let projects = db.search_projects(name).await?;
-
-    // Prepare template
-    let template = misc::Projects { projects };
+    let projects = db.search_projects(foundation, project).await?;
 
     // Prepare response headers
     let headers = prepare_headers(Duration::hours(1), &[])?;
 
-    Ok((headers, Html(template.render()?)).into_response())
+    Ok((headers, Json(projects)).into_response())
 }
 
 /// Handler that returns the header user menu section.

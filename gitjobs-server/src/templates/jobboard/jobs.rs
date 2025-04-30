@@ -81,7 +81,7 @@ pub(crate) struct Filters {
     #[serde(skip_serializing_if = "option_is_none_or_default")]
     pub open_source: Option<usize>,
     #[serde(skip_serializing_if = "option_is_none_or_default")]
-    pub projects: Option<Vec<String>>,
+    pub projects: Option<Vec<JobProject>>,
     #[serde(skip_serializing_if = "option_is_none_or_default")]
     pub salary_min: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -140,6 +140,13 @@ pub(crate) enum DateRange {
     Last30Days,
 }
 
+/// Job project filter option.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub(crate) struct JobProject {
+    pub foundation: String,
+    pub name: String,
+}
+
 /// Seniority level filter option.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, strum::Display, strum::EnumString)]
 #[serde(rename_all = "kebab-case")]
@@ -168,7 +175,6 @@ pub(crate) enum Sort {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub(crate) struct FiltersOptions {
     pub foundations: Vec<Foundation>,
-    pub projects: Vec<Project>,
 }
 
 /// Job summary.

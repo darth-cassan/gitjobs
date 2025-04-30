@@ -5,6 +5,7 @@
 <form id="jobs-form"
       hx-post="/dashboard/employer/jobs/add"
       hx-ext="no-empty-vals"
+      hx-exclude="[name=foundation],[name=project]"
       hx-trigger="submit"
       hx-indicator="#dashboard-spinner, #save-spinner"
       hx-disabled-elt="button[type=submit], #publish-job, #cancel-button, #preview-button">
@@ -371,16 +372,7 @@
         {# End Upstream commitment -#}
 
         {# Projects -#}
-        <div class="col-span-full lg:col-span-3">
-          <label for="project" class="form-label">Projects</label>
-          {% call macros::search_project() -%}
-          <p class="form-legend">
-            If the job position involves contributing to any of the supported foundations projects, please list them here.
-          </p>
-        </div>
-        <div class="col-span-full -mt-4">
-          <div id="selected-projects" class="flex flex-wrap gap-5 w-full"></div>
-        </div>
+        <dashboard-search foundations="{{ foundations|json }}" class="col-span-full"></dashboard-search>
         {# End projects -#}
       </div>
     </div>
