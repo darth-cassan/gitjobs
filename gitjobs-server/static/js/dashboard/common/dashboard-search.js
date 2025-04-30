@@ -112,7 +112,7 @@ export class DashboardSearch extends LitWrapper {
       // Select the highlighted item
       case "Enter":
         event.preventDefault();
-        if (this.activeIndex && this.visibleOptions.length > 0) {
+        if (this.activeIndex !== null && this.visibleOptions.length > 0) {
           const activeItem = this.visibleOptions[this.activeIndex];
           if (activeItem) {
             const activeItem = this.visibleOptions[this.activeIndex];
@@ -155,7 +155,12 @@ export class DashboardSearch extends LitWrapper {
   }
 
   _onRemove(id) {
-    this.selected = this.selected.filter((item) => item.project_id !== id);
+    this.selected = this.selected.filter((item) => {
+      const itemId = this.type === "members" ? item.member_id : item.project_id;
+      if (itemId !== id) {
+        return item;
+      }
+    });
   }
 
   render() {
