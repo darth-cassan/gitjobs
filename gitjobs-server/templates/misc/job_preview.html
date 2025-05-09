@@ -1,7 +1,7 @@
 {% import "macros.html" as macros -%}
 
 {# Job preview -#}
-{% macro job_preview(job, employer, logo = "", employer_description = "", job_id = "", with_links = false) -%}
+{% macro job_preview(job, employer, logo = "", employer_description = "", job_id = "", base_url = "", with_links = false) -%}
   <div class="flex flex-col w-full gap-3 md:flex-row md:items-center border-b border-stone-200 pb-7 xl:pb-10">
     <div class="grow min-w-0">
       <div class="grow flex items-stretch gap-x-4 md:gap-x-5 pe-12 md:pe-0 min-w-0">
@@ -64,8 +64,8 @@
     {% endif -%}
     {# End salary -#}
 
+    {# Member badge -#}
     {% if let Some(member) = employer.member -%}
-
       <div class="hidden lg:flex xl:w-1/4">
         <div class="flex gap-x-2 items-center bg-stone-50 border border-stone-200 rounded-lg p-2 max-w-full xl:min-w-full">
           <div class="flex items-center justify-center size-10 shrink-0">
@@ -84,11 +84,12 @@
         </div>
       </div>
     {% endif -%}
+    {# End memeber badge -#}
   </div>
 
   <div class="flex flex-col md:flex-row-reverse grow md:items-stretch">
     {# Info -#}
-    <div class="border-b pb-1 md:pb-0 md:border-0 md:border border-stone-200 md:w-1/4 pt-6">
+    <div class="border-b pb-1 md:pb-0 md:border-0 md:border border-stone-200 md:w-1/4 pt-6 md:pt-4 xl:pt-6">
       <div class="flex flex-col md:flex-col-reverse">
         <div>
           <div class="flex flex-row justify-between mb-4 md:mb-0 md:flex-col md:justify-start">
@@ -204,7 +205,7 @@
               <button id="apply-button"
                       data-job-id="{{ job_id }}"
                       data-apply-url="{{ job.apply_url|display_some }}"
-                      class="btn-primary w-full block mt-4 mb-2 md:mt-6"
+                      class="btn-primary w-full block mt-4 md:mt-2 mb-2 xl:mt-6"
                       disabled>Apply</button>
               <script type="module">
                 import {
@@ -213,7 +214,7 @@
                 applyButton();
               </script>
             {% else -%}
-              <button class="btn-primary w-full block mt-4 mb-2 md:mt-6" disabled>Apply</button>
+              <button class="btn-primary w-full block mt-4 md:mt-2 mb-2 xl:mt-6" disabled>Apply</button>
             {% endif -%}
             {# End apply button -#}
           </div>
@@ -277,7 +278,7 @@
                 </div>
                 <div id="copy-link-tooltip"
                      role="tooltip"
-                     class="absolute top-11 xl:top-12 z-10 start-8.5 xl:start-7.5 opacity-0 inline-block px-3 py-2 text-xs xl:text-sm font-medium text-white transition-opacity duration-300 bg-stone-900/80 rounded-lg shadow-xs tooltip">
+                     class="absolute top-11 xl:top-12 start-8.5 xl:start-7.5 opacity-0 inline-block px-3 py-2 text-xs xl:text-sm font-medium text-white transition-opacity duration-300 bg-stone-900/80 rounded-lg shadow-xs tooltip">
                   Job link copied to clipboard!
                   <div class="h-0 w-0 border-x-[6px] border-x-transparent border-b-[6px] border-stone-900/80 absolute -top-1.5 end-3">
                   </div>
@@ -294,12 +295,19 @@
               shareJob();
             </script>
           {% endif -%}
+
+          {% if !base_url.is_empty() && !job_id.is_empty() -%}
+            <div class="hidden md:flex w-full lg:w-3/4 xxl:w-1/2 mx-auto z-8">
+              <button class="btn-primary-outline btn-mini w-full mt-4 mb-2 md:mt-6"
+                      id="embed-code-button">Get embed code</button>
+            </div>
+          {% endif -%}
         </div>
       </div>
     </div>
     {# End info -#}
 
-    <div class="md:w-3/4 md:border-e border-stone-200 md:me-6 xl:me-10 md:pe-6 xl:pe-10 pt-5 xl:pt-10">
+    <div class="md:w-3/4 md:border-e border-stone-200 md:me-6 xl:me-10 md:pe-6 xl:pe-10 pt-5 md:pt-6 xl:pt-10">
       {# Content -#}
       <div class="flex flex-col space-y-6">
         {# Job description -#}
