@@ -24,7 +24,7 @@ use crate::{
         dashboard::employer::{
             applications, employers,
             home::{self, Content, Tab},
-            jobs,
+            jobs, team,
         },
         pagination::NavigationLinks,
     },
@@ -50,10 +50,20 @@ pub(crate) async fn page(
         return Ok(StatusCode::FORBIDDEN.into_response());
     };
 
+    // Get employers and pending invitations
+    let (employers, pending_invitations) = tokio::try_join!(
+        db.list_employers(&user.user_id),
+        db.get_user_invitations_count(&user.user_id)
+    )?;
+
     // Get selected tab from query
     let mut tab: Tab = query.get("tab").unwrap_or(&String::new()).parse().unwrap_or_default();
-    if tab != Tab::Account && employer_id.is_none() {
-        tab = Tab::EmployerInitialSetup;
+    if (tab != Tab::Account && tab != Tab::Invitations) && employer_id.is_none() {
+        if pending_invitations > 0 {
+            tab = Tab::Invitations;
+        } else {
+            tab = Tab::EmployerInitialSetup;
+        }
     }
 
     // Prepare content for the selected tab
@@ -77,6 +87,10 @@ pub(crate) async fn page(
             })
         }
         Tab::EmployerInitialSetup => Content::EmployerInitialSetup(employers::InitialSetupPage {}),
+        Tab::Invitations => {
+            let invitations = db.list_user_invitations(&user.user_id).await?;
+            Content::Invitations(team::UserInvitationsListPage { invitations })
+        }
         Tab::Jobs => {
             let jobs = db.list_employer_jobs(&employer_id.expect("to be some")).await?;
             Content::Jobs(jobs::ListPage { jobs })
@@ -89,10 +103,16 @@ pub(crate) async fn page(
                 foundations,
             })
         }
+        Tab::Team => {
+            let members = db.list_team_members(&employer_id.expect("to be some")).await?;
+            Content::Team(team::MembersListPage {
+                approved_members_count: members.iter().filter(|m| m.approved).count(),
+                members,
+            })
+        }
     };
 
     // Prepare template
-    let employers = db.list_employers(&user.user_id).await?;
     let template = home::Page {
         auth_provider: session.get(AUTH_PROVIDER_KEY).await?,
         cfg: cfg.into(),
@@ -100,6 +120,7 @@ pub(crate) async fn page(
         employers,
         messages: messages.into_iter().collect(),
         page_id: PageId::EmployerDashboard,
+        pending_invitations,
         selected_employer_id: employer_id,
         user: auth_session.into(),
     };

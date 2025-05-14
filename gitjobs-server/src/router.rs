@@ -192,6 +192,10 @@ fn setup_employer_dashboard_router(state: &State) -> Router<State> {
             "/employers/{employer_id}/select",
             put(dashboard::employer::employers::select).layer(check_user_owns_employer.clone()),
         )
+        .route(
+            "/invitations",
+            get(dashboard::employer::team::user_invitations_list_page),
+        )
         .route("/jobs/list", get(dashboard::employer::jobs::list_page))
         .route(
             "/jobs/add",
@@ -223,6 +227,23 @@ fn setup_employer_dashboard_router(state: &State) -> Router<State> {
                 .layer(check_user_owns_job.clone())
                 .put(dashboard::employer::jobs::update)
                 .layer(check_user_owns_job.clone()),
+        )
+        .route(
+            "/team/invitations/{employer_id}/accept",
+            put(dashboard::employer::team::accept_invitation),
+        )
+        .route(
+            "/team/invitations/{employer_id}/reject",
+            put(dashboard::employer::team::reject_invitation),
+        )
+        .route("/team/members/add", post(dashboard::employer::team::add_member))
+        .route(
+            "/team/members/list",
+            get(dashboard::employer::team::members_list_page),
+        )
+        .route(
+            "/team/members/{user_id}/delete",
+            delete(dashboard::employer::team::delete_member),
         )
 }
 
