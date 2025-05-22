@@ -12,7 +12,7 @@ use crate::templates::{Config, PageId, auth::User, dashboard::moderator::jobs, f
 #[derive(Debug, Clone, Template)]
 #[template(path = "dashboard/moderator/home.html")]
 pub(crate) struct Page {
-    /// Application configuration.
+    /// Server configuration.
     pub cfg: Config,
     /// Content section for the dashboard.
     pub content: Content,
@@ -22,6 +22,7 @@ pub(crate) struct Page {
     pub messages: Vec<Message>,
     /// Authenticated user information.
     pub user: User,
+
     /// Name of the authentication provider, if any.
     pub auth_provider: Option<String>,
 }

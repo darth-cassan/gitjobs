@@ -17,7 +17,7 @@ use crate::templates::{
 #[derive(Debug, Clone, Template)]
 #[template(path = "dashboard/job_seeker/home.html")]
 pub(crate) struct Page {
-    /// Application configuration.
+    /// Server configuration.
     pub cfg: Config,
     /// Content section for the dashboard.
     pub content: Content,
@@ -27,6 +27,7 @@ pub(crate) struct Page {
     pub messages: Vec<Message>,
     /// Authenticated user information.
     pub user: User,
+
     /// Name of the authentication provider, if any.
     pub auth_provider: Option<String>,
 }

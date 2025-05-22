@@ -16,9 +16,9 @@ use crate::{
 #[derive(Debug, Clone, Template, Serialize, Deserialize)]
 #[template(path = "auth/log_in.html")]
 pub(crate) struct LogInPage {
-    /// Application configuration.
+    /// Server configuration.
     pub cfg: Config,
-    /// Login options and providers.
+    /// Login options.
     pub login: LoginOptions,
     /// Identifier for the current page.
     pub page_id: PageId,
@@ -26,6 +26,7 @@ pub(crate) struct LogInPage {
     pub messages: Vec<Message>,
     /// Authenticated user information.
     pub user: User,
+
     /// Name of the authentication provider, if any.
     pub auth_provider: Option<String>,
     /// Next URL to redirect to after login, if any.
@@ -36,9 +37,9 @@ pub(crate) struct LogInPage {
 #[derive(Debug, Clone, Template, Serialize, Deserialize)]
 #[template(path = "auth/sign_up.html")]
 pub(crate) struct SignUpPage {
-    /// Application configuration.
+    /// Server configuration.
     pub cfg: Config,
-    /// Login options and providers.
+    /// Login options.
     pub login: LoginOptions,
     /// Identifier for the current page.
     pub page_id: PageId,
@@ -46,6 +47,7 @@ pub(crate) struct SignUpPage {
     pub messages: Vec<Message>,
     /// Authenticated user information.
     pub user: User,
+
     /// Name of the authentication provider, if any.
     pub auth_provider: Option<String>,
     /// Next URL to redirect to after sign up, if any.
@@ -71,6 +73,7 @@ pub(crate) struct User {
     pub logged_in: bool,
     /// Whether the user is a moderator.
     pub moderator: bool,
+
     /// Display name of the user, if any.
     pub name: Option<String>,
     /// Username, if any.

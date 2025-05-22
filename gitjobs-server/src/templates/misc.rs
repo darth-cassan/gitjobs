@@ -12,12 +12,13 @@ use crate::templates::{Config, PageId, auth::User, filters, helpers::format_loca
 #[derive(Debug, Clone, Template, PartialEq, Serialize, Deserialize)]
 #[template(path = "misc/not_found.html")]
 pub(crate) struct NotFoundPage {
-    /// Application configuration.
+    /// Server configuration.
     pub cfg: Config,
     /// Identifier for the current page.
     pub page_id: PageId,
     /// Authenticated user information.
     pub user: User,
+
     /// Name of the authentication provider, if any.
     pub auth_provider: Option<String>,
 }
@@ -28,6 +29,7 @@ pub(crate) struct NotFoundPage {
 pub(crate) struct UserMenuSection {
     /// Authenticated user information.
     pub user: User,
+
     /// Name of the authentication provider, if any.
     pub auth_provider: Option<String>,
 }
@@ -50,6 +52,7 @@ pub(crate) struct Location {
     pub city: String,
     /// Country name.
     pub country: String,
+
     /// State or region, if any.
     pub state: Option<String>,
 }

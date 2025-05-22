@@ -11,7 +11,10 @@ use uuid::Uuid;
 
 use crate::{
     PgDB,
-    templates::jobboard::jobs::{Filters, FiltersOptions, Job, JobSummary},
+    templates::jobboard::{
+        jobs::{Filters, FiltersOptions, Job, JobSummary},
+        stats::Stats,
+    },
 };
 
 /// Trait for database operations used by the job board, such as applying and searching jobs.
@@ -25,6 +28,9 @@ pub(crate) trait DBJobBoard {
 
     /// Retrieves available filter options for job searches.
     async fn get_jobs_filters_options(&self) -> Result<FiltersOptions>;
+
+    /// Retrieves statistics about the job board.
+    async fn get_stats(&self) -> Result<Stats>;
 
     /// Searches for jobs using the provided filter criteria.
     async fn search_jobs(&self, filters: &Filters) -> Result<JobsSearchOutput>;
@@ -220,6 +226,21 @@ impl DBJobBoard for PgDB {
 
         let db = self.pool.get().await?;
         inner(db).await
+    }
+
+    #[instrument(skip(self))]
+    async fn get_stats(&self) -> Result<Stats> {
+        trace!("db: get stats");
+
+        // Query database
+        let db = self.pool.get().await?;
+        let json_data: String = db
+            .query_one("select get_stats()::text as stats;", &[])
+            .await?
+            .get("stats");
+        let stats = serde_json::from_str(&json_data)?;
+
+        Ok(stats)
     }
 
     #[instrument(skip(self))]
