@@ -1,3 +1,5 @@
+import { prettifyNumber } from "/static/js/common/common.js";
+
 const gitjobs_theme = {
   color: ["#fd4d12", "#5470c6", "#91cc75", "#fac858", "#ee6666", "#73c0de", "#3ba272", "#fc8452", "#9a60b4"],
   backgroundColor: "rgba(0,0,0,0)",
@@ -357,6 +359,8 @@ const gitjobs_theme = {
   },
 };
 
+const MESSAGE_EMPTY_STATS = "No data available yet";
+
 const renderLineChart = (data) => {
   const chartDom = document.getElementById("line-chart");
   if (!chartDom) return;
@@ -405,7 +409,12 @@ const renderLineChart = (data) => {
         show: false,
       },
     },
-    yAxis: {},
+    yAxis: {
+      type: "value",
+      axisLabel: {
+        formatter: (value) => `${prettifyNumber(value)}`,
+      },
+    },
     series: {
       type: "line",
       name: "Published jobs",
@@ -425,6 +434,18 @@ const renderLineChart = (data) => {
         ]),
       },
     },
+    media: [
+      {
+        query: {
+          maxWidth: 550,
+        },
+        option: {
+          grid: {
+            left: "60px",
+          },
+        },
+      },
+    ],
   };
 
   option && myChart.setOption(option);
@@ -440,15 +461,26 @@ const getBarStatsOptions = () => {
     },
     xAxis: {
       type: "time",
+      scale: true,
+      boundaryGap: false,
     },
-    yAxis: {},
+    yAxis: {
+      type: "value",
+      axisLabel: {
+        formatter: (value) => `${prettifyNumber(value)}`,
+      },
+    },
     series: {
       type: "bar",
       name: "Views",
       encode: { x: "timestamp", y: "jobs" },
+      barMaxWidth: 35,
       label: {
         show: true,
         position: "top",
+        formatter: (params) => {
+          return prettifyNumber(params.value[1]);
+        },
       },
       datasetIndex: 1,
     },
@@ -462,6 +494,19 @@ const getBarStatsOptions = () => {
             label: {
               show: false,
             },
+          },
+        },
+      },
+      {
+        query: {
+          maxWidth: 550,
+        },
+        option: {
+          grid: {
+            left: "60px",
+          },
+          series: {
+            barMaxWidth: 10,
           },
         },
       },
@@ -500,7 +545,7 @@ const renderBarDailyChart = (data, max, min) => {
       ...getBarStatsOptions().tooltip,
       formatter: (params) => {
         const chartdate = echarts.time.format(params.data[0], "{dd} {MMM}'{yy}");
-        return `${chartdate}<br />Jobs: ${params.data[1]}`;
+        return `${chartdate}<br />Jobs: ${prettifyNumber(params.data[1])}`;
       },
     },
     xAxis: {
@@ -531,10 +576,6 @@ const renderBarMonthlyChart = (data, max, min) => {
 
   const option = {
     ...getBarStatsOptions(),
-    series: {
-      ...getBarStatsOptions().series,
-      barWidth: "4%",
-    },
     dataset: [
       {
         dimensions: ["timestamp", "jobs"],
@@ -551,7 +592,7 @@ const renderBarMonthlyChart = (data, max, min) => {
       ...getBarStatsOptions().tooltip,
       formatter: (params) => {
         const chartdate = echarts.time.format(params.data[0], "{MMM} {yyyy}");
-        return `${chartdate}<br />Views: ${params.data[1]}`;
+        return `${chartdate}<br />Views: ${prettifyNumber(params.data[1])}`;
       },
     },
     xAxis: {
@@ -576,7 +617,30 @@ export const renderStats = () => {
 
   echarts.registerTheme("gitjobs", gitjobs_theme);
 
-  renderLineChart(stats.jobs.published_running_total);
-  renderBarDailyChart(stats.jobs.views_daily, stats.ts_now, stats.ts_one_month_ago);
-  renderBarMonthlyChart(stats.jobs.views_monthly, stats.ts_now, stats.ts_two_years_ago);
+  if (!stats.jobs.published_running_total) {
+    const chartDom = document.getElementById("line-chart");
+    if (chartDom) {
+      chartDom.innerHTML = `<div>${MESSAGE_EMPTY_STATS}</div>`;
+    }
+  } else {
+    renderLineChart(stats.jobs.published_running_total);
+  }
+
+  if (!stats.jobs.views_daily) {
+    const chartDom = document.getElementById("bar-daily");
+    if (chartDom) {
+      chartDom.innerHTML = `<div>${MESSAGE_EMPTY_STATS}</div>`;
+    }
+  } else {
+    renderBarDailyChart(stats.jobs.views_daily, stats.ts_now, stats.ts_one_month_ago);
+  }
+
+  if (!stats.jobs.views_monthly) {
+    const chartDom = document.getElementById("bar-monthly");
+    if (chartDom) {
+      chartDom.innerHTML = `<div>${MESSAGE_EMPTY_STATS}</div>`;
+    }
+  } else {
+    renderBarMonthlyChart(stats.jobs.views_monthly, stats.ts_now, stats.ts_two_years_ago);
+  }
 };

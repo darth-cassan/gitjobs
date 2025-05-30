@@ -235,7 +235,7 @@
               {% endif -%}
               {{ salary|humanize_salary }}
               {%- if let Some(salary_period) = job.salary_period -%}
-                <span class="lowercase">/ {{ salary_period }}</span>
+                <span class="lowercase ms-1">/ {{ salary_period }}</span>
               {%- endif -%}
             {% else if let Some(salary_min) = job.salary_min -%}
               {% if let Some(salary_currency) = job.salary_currency -%}
@@ -246,7 +246,7 @@
                 - {{ salary_max|humanize_salary }}
               {% endif -%}
               {%- if let Some(salary_period) = job.salary_period -%}
-                <span class="lowercase">/ {{ salary_period }}</span>
+                <span class="lowercase ms-1">/ {{ salary_period }}</span>
               {%- endif -%}
             {% else -%}
               Not provided
@@ -264,7 +264,7 @@
       {# Open source -#}
       <div class="block">
         {% call mini_title(content = "Time working on open source") -%}
-        <div class="mt-2">
+        <div class="mt-2 min-w-[220px]">
           {% call macros_preview::badge_percentage_bar(percentage = open_source, bar_margin = "my-0") -%}
         </div>
       </div>
@@ -273,7 +273,7 @@
       {# Upstream commitment -#}
       <div class="block">
         {% call mini_title(content = "Time working on upstream projects") -%}
-        <div class="mt-2">
+        <div class="mt-2 min-w-[220px]">
           {% call macros_preview::badge_percentage_bar(percentage = upstream_commitment, type = "upstream_commitment", bar_margin = "my-0") -%}
         </div>
       </div>
