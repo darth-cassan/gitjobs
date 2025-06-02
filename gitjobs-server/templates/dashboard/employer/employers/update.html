@@ -63,7 +63,7 @@
       <div class="col-span-full lg:col-span-3">
         <label for="ts_query" class="form-label">Location</label>
         {% if let Some(location) = employer.location -%}
-          <search-location location_id="{{ location.location_id }}" city="{{ location.city }}" state="{{ location.state|display_some }}" country="{{ location.country }}"></search-location>
+          <search-location locationId="{{ location.location_id }}" city="{{ location.city }}" state="{{ location.state|display_some }}" country="{{ location.country }}"></search-location>
         {% else -%}
           <search-location></search-location>
         {% endif -%}
@@ -143,14 +143,15 @@
   } from '/static/js/common/common.js';
 
   const employerForm = document.getElementById('employer-form');
-
-  employerForm.addEventListener('htmx:afterRequest', (e) => {
-    // Check if the form is the employer form and not the input ts_query requesting locations
-    if (e.detail.elt.id === 'employer-form') {
-      if (!isSuccessfulXHRStatus(e.detail.xhr.status)) {
-        window.scrollTo(0, 0);
-        showErrorAlert('Something went wrong updating the profile, please try again later.');
+  if (employerForm) {
+    employerForm.addEventListener('htmx:afterRequest', (e) => {
+      // Check if the form is the employer form and not the input ts_query requesting locations
+      if (e.detail.elt.id === 'employer-form') {
+        if (!isSuccessfulXHRStatus(e.detail.xhr.status)) {
+          window.scrollTo(0, 0);
+          showErrorAlert('Something went wrong updating the profile, please try again later.');
+        }
       }
-    }
-  });
+    });
+  }
 </script>
