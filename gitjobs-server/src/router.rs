@@ -26,6 +26,7 @@ use crate::{
     auth::AuthnBackend,
     config::HttpServerConfig,
     db::DynDB,
+    event_tracker::DynEventTracker,
     handlers::{
         auth::{self, LOG_IN_URL},
         dashboard, img, jobboard,
@@ -33,7 +34,6 @@ use crate::{
     },
     img::DynImageStore,
     notifications::DynNotificationsManager,
-    views::DynViewsTracker,
 };
 
 /// Embeds static files from the "static" folder into the binary.
@@ -54,8 +54,8 @@ pub(crate) struct State {
     pub serde_qs_de: serde_qs::Config,
     /// Notifications manager handle.
     pub notifications_manager: DynNotificationsManager,
-    /// Views tracker handle.
-    pub views_tracker: DynViewsTracker,
+    /// Event tracker handle.
+    pub event_tracker: DynEventTracker,
 }
 
 /// Sets up the main application router and all sub-routers.
@@ -65,7 +65,7 @@ pub(crate) async fn setup(
     db: DynDB,
     image_store: DynImageStore,
     notifications_manager: DynNotificationsManager,
-    views_tracker: DynViewsTracker,
+    event_tracker: DynEventTracker,
 ) -> Result<Router> {
     // Setup router state
     let state = State {
@@ -74,7 +74,7 @@ pub(crate) async fn setup(
         image_store,
         serde_qs_de: serde_qs::Config::new(3, false),
         notifications_manager,
-        views_tracker,
+        event_tracker,
     };
 
     // Setup authentication / authorization layer
@@ -115,6 +115,10 @@ pub(crate) async fn setup(
         .route("/health-check", get(health_check))
         .nest("/jobboard/images", jobboard_images_router)
         .route("/jobs/{job_id}/views", post(jobboard::jobs::track_view))
+        .route(
+            "/jobs/search-appearances",
+            post(jobboard::jobs::track_search_appearances),
+        )
         .route("/locations/search", get(search_locations))
         .route("/log-in", get(auth::log_in_page));
 

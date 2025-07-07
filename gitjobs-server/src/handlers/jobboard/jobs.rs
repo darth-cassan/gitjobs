@@ -3,7 +3,7 @@
 use anyhow::Result;
 use askama::Template;
 use axum::{
-    extract::{Path, State},
+    extract::{Json, Path, State},
     response::{Html, IntoResponse},
 };
 use chrono::Duration;
@@ -17,6 +17,7 @@ use crate::{
     auth::AuthSession,
     config::HttpServerConfig,
     db::{DynDB, jobboard::JobsSearchOutput},
+    event_tracker::{DynEventTracker, Event},
     handlers::{auth::AUTH_PROVIDER_KEY, error::HandlerError, prepare_headers},
     templates::{
         PageId,
@@ -24,7 +25,6 @@ use crate::{
         jobboard::jobs::{ExploreSection, Filters, JobSection, JobsPage, ResultsSection},
         pagination::{NavigationLinks, build_url},
     },
-    views::DynViewsTracker,
 };
 
 // Pages and sections handlers.
@@ -140,10 +140,21 @@ pub(crate) async fn apply(
 /// Tracks a view for a specific job in the job board.
 #[instrument(skip_all, err)]
 pub(crate) async fn track_view(
-    State(views_tracker): State<DynViewsTracker>,
+    State(event_tracker): State<DynEventTracker>,
     Path(job_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, HandlerError> {
-    views_tracker.track_view(job_id).await?;
+    event_tracker.track(Event::JobView { job_id }).await?;
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
+/// Tracks search appearances for multiple jobs.
+#[instrument(skip_all, err)]
+pub(crate) async fn track_search_appearances(
+    State(event_tracker): State<DynEventTracker>,
+    Json(job_ids): Json<Vec<Uuid>>,
+) -> Result<impl IntoResponse, HandlerError> {
+    event_tracker.track(Event::SearchAppearances { job_ids }).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }

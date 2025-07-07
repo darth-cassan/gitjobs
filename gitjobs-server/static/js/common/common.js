@@ -161,14 +161,37 @@ export const shouldDisplayJobModal = (onLoad = false) => {
 };
 
 /**
- * Registers a view for a specific job by sending a POST request.
+ * Tracks a view for a specific job by sending a POST request.
  * Silently handles errors without user notification.
  * @param {string} jobId - The ID of the job to register a view for
  */
-export const registerJobIdView = async (jobId) => {
+export const trackerJobView = async (jobId) => {
+  if (!jobId) return;
+
   try {
     fetch(`/jobs/${jobId}/views`, {
       method: "POST",
+    });
+  } catch (error) {
+    // Silently ignore errors
+  }
+};
+
+/**
+ * Tracks search appearances for multiple jobs by sending job IDs to the server.
+ * Used when search results are displayed to track which jobs appeared.
+ * @param {string[]} jobIds - Array of job IDs that appeared in search results
+ */
+export const trackSearchAppearances = async (jobIds) => {
+  if (!jobIds || jobIds.length === 0) return;
+
+  try {
+    await fetch("/jobs/search-appearances", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(jobIds),
     });
   } catch (error) {
     // Silently ignore errors
