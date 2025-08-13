@@ -1,0 +1,21 @@
+name: End-to-end tests
+on:
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+      - name: Install Playwright
+        run: npm i -D @playwright/test
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: npx playwright test --config tests/e2e/playwright.config.ts
