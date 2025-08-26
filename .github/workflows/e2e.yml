@@ -1,18 +1,147 @@
 name: End-to-end tests
+
 on:
-  schedule:
-    - cron: '0 */2 * * *'
   workflow_dispatch:
 
 jobs:
-  e2e-tests:
+  test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_USER: gitjobs
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: gitjobs
+        ports:
+          - 5432:5432
+
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4
-      - name: Install Playwright
-        run: npm i -D @playwright/test
-      - name: Install Playwright browsers
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust environment
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('''**/Cargo.lock''') }}
+
+      - name: Set up Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Initialize npm and install dependencies
+        run: |
+          npm init -y
+          npm install -D @playwright/test wait-on
+
+      - name: Install Playwright Browsers
         run: npx playwright install --with-deps
+
+      - name: Install Standalone Tailwind CSS
+        run: |
+          curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-x64
+          chmod +x tailwindcss-linux-x64
+          sudo mv tailwindcss-linux-x64 /usr/local/bin/tailwindcss
+
+      - name: Install tern
+        run: |
+          curl -sL https://github.com/jackc/tern/releases/download/v2.3.2/tern_2.3.2_linux_amd64.tar.gz -o tern.tar.gz
+          tar -xzf tern.tar.gz
+          sudo mv tern /usr/local/bin/
+
+      - name: Build server
+        run: cargo build --verbose --bin gitjobs-server
+
+      - name: Prepare Database by Dropping Extensions
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: gitjobs
+          PGPASSWORD: password
+          PGDATABASE: gitjobs
+        run: |
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          psql -c "DROP EXTENSION IF EXISTS postgis CASCADE;"
+          psql -c "DROP EXTENSION IF EXISTS pgcrypto CASCADE;"
+          psql -c "DROP EXTENSION IF EXISTS pg_trgm CASCADE;"
+      - name: Run database migrations
+        working-directory: database/migrations
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: gitjobs
+          PGPASSWORD: password
+          PGDATABASE: gitjobs
+          TERN_CONF: ${{ github.workspace }}/database/migrations/tern.conf
+        run: |
+          touch tern.conf
+          bash ./migrate.sh
+
+      - name: Insert test data
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: gitjobs
+          PGPASSWORD: password
+          PGDATABASE: gitjobs
+        run: |
+          psql -c "INSERT INTO \"user\" (user_id, auth_hash, created_at, email, email_verified, name, username, password, moderator) VALUES ('493e23f5-e794-4ce9-bd45-75f6d8d363ab', E'\\x42eec0a8a4ba266101cc3de9377d2b206d8bd8e4f16e40b11f3bc7c9dba169be', '2025-08-25 08:43:11.605766+02', 'test@t.com', true, 'test', 'test', '\$argon2id\$v=19\$m=19456,t=2,p=1\$vUCLsb/lDAepJiWB7VSFNw\$yAYeJVIKW0gK3cOJAnpiV9H5uPZDATJh13fDWGivjZM', true);"
+          psql -c "INSERT INTO employer (employer_id, company, created_at, description, public) VALUES ('18fff2d7-c794-4130-85e4-76b9d7c60b72', 'Test Inc.', '2025-08-25 09:20:05.88454+02', 'test', false);"
+          psql -c "INSERT INTO employer_team (employer_id, user_id, approved) VALUES ('18fff2d7-c794-4130-85e4-76b9d7c60b72', '493e23f5-e794-4ce9-bd45-75f6d8d363ab', true);"
+
+      - name: Create Server Config File
+        run: |
+          cat <<EOF > config.testing.yml
+          db:
+            url: postgres://gitjobs:password@127.0.0.1:5432/gitjobs
+          email:
+            from_address: "test@example.com"
+            from_name: "Test"
+            smtp:
+              host: "127.0.0.1"
+              port: 2525
+              username: "test"
+              password: "password"
+          log:
+            format: "pretty"
+          server:
+            addr: "0.0.0.0:8080"
+            base_url: "http://127.0.0.1:8080"
+            login:
+              email: true
+              github: true
+              linuxfoundation: false
+            oauth2:
+              github:
+                auth_url: "https://github.com/login/oauth/authorize"
+                client_id: "dummy_client_id"
+                client_secret: "dummy_client_secret"
+                redirect_uri: "http://127.0.0.1:8080/auth/github/callback"
+                scopes: ["read:user", "user:email"]
+                token_url: "https://github.com/login/oauth/access_token"
+            oidc: {}
+          EOF
+
+      - name: Start server and wait for it to be ready
+        uses: JarvusInnovations/background-action@v1
+        with:
+          run: ./target/debug/gitjobs-server --config-file config.testing.yml > server.log 2>&1 &
+          wait-on: http://localhost:8080
+
       - name: Run Playwright tests
         run: npx playwright test --config tests/e2e/playwright.config.ts
+        env:
+          BASE_URL: http://127.0.0.1:8080
