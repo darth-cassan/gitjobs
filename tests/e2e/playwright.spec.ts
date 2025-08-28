@@ -99,6 +99,41 @@ test.describe('GitJobs', () => {
     await expect(page).toHaveURL(/\/sign-up/);
   });
 
+  test('should log in a user', async ({ page }) => {
+    await page.locator('#user-dropdown-button').click();
+    await page.getByRole('link', { name: 'Log in' }).click();
+    await page.getByText('Log In Username Password').click();
+    await page.getByRole('textbox', { name: 'Username' }).click();
+    await page.getByRole('textbox', { name: 'Username' }).fill('test');
+    await page.getByRole('textbox', { name: 'Password' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).fill('test');
+    await page.getByRole('button', { name: 'Submit' }).click();
+    await expect(page).toHaveURL('/');
+  });
+
+  test('should add a new job', async ({ page }) => {
+    // Log in first
+    await page.locator('#user-dropdown-button').click();
+    await page.getByRole('link', { name: 'Log in' }).click();
+    await page.getByText('Log In Username Password').click();
+    await page.getByRole('textbox', { name: 'Username' }).click();
+    await page.getByRole('textbox', { name: 'Username' }).fill('test');
+    await page.getByRole('textbox', { name: 'Password' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).fill('test');
+    await page.getByRole('button', { name: 'Submit' }).click();
+    await expect(page).toHaveURL('/');
+
+    // Add a new job
+    await page.getByRole('link', { name: 'Post a job' }).click();
+    await page.getByRole('button', { name: 'Add Job' }).click();
+    await page.getByRole('textbox', { name: 'Title *' }).click();
+    await page.getByRole('textbox', { name: 'Title *' }).fill('job');
+    await page.locator('#description pre').nth(1).click();
+    await page.locator('#description').getByRole('application').getByRole('textbox').fill('description');
+    await page.getByRole('button', { name: 'Publish' }).click();
+    await expect(page).toHaveURL('http://localhost:9000/dashboard/employer?tab=jobs');
+  });
+
 
 
   test('should display job details correctly', async ({ page }) => {
