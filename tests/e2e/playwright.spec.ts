@@ -102,7 +102,6 @@ test.describe('GitJobs', () => {
   test('should log in a user', async ({ page }) => {
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
-    await page.getByText('Log In Username Password').click();
     await page.getByRole('textbox', { name: 'Username' }).click();
     await page.getByRole('textbox', { name: 'Username' }).fill('test');
     await page.getByRole('textbox', { name: 'Password' }).click();
@@ -115,7 +114,6 @@ test.describe('GitJobs', () => {
     // Log in first
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
-    await page.getByText('Log In Username Password').click();
     await page.getByRole('textbox', { name: 'Username' }).click();
     await page.getByRole('textbox', { name: 'Username' }).fill('test');
     await page.getByRole('textbox', { name: 'Password' }).click();
