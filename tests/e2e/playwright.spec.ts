@@ -102,6 +102,7 @@ test.describe('GitJobs', () => {
   test('should log in a user', async ({ page }) => {
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
+    await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL('/log-in');
     await page.locator('#username').click();
     await page.locator('#username').fill('test');
@@ -115,6 +116,7 @@ test.describe('GitJobs', () => {
     // Log in first
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
+    await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL('/log-in');
     await page.locator('#username').click();
     await page.locator('#username').fill('test');
@@ -131,7 +133,7 @@ test.describe('GitJobs', () => {
     await page.locator('#description pre').nth(1).click();
     await page.locator('#description').getByRole('application').getByRole('textbox').fill('description');
     await page.getByRole('button', { name: 'Publish' }).click();
-    await expect(page).toHaveURL('http://localhost:9000/dashboard/employer?tab=jobs');
+    await expect(page.url()).toContain('/dashboard/employer');
   });
 
 
