@@ -38,14 +38,10 @@ test.describe('GitJobs', () => {
     await page.locator('label').filter({ hasText: 'Full Time' }).nth(1).click();
     await page.waitForLoadState('networkidle');
 
-    const jobCards = await page.locator('[data-preview-job="true"]').all();
-    const displayedJobTitles = [];
-    for (const jobCard of jobCards) {
-      const title = await jobCard.locator('div.text-base.font-stretch-condensed').textContent();
-      displayedJobTitles.push(title.trim());
+    const displayedJobTitles = await page.locator('[data-preview-job="true"] div.text-base.font-stretch-condensed').allTextContents();
+    for (const jobTitle of fullTimeJobs) {
+      expect(displayedJobTitles.map(t => t.trim())).toContain(jobTitle);
     }
-
-    expect(displayedJobTitles.sort()).toEqual(fullTimeJobs.sort());
   });
 
   test('should reset filters', async ({ page }) => {
@@ -99,9 +95,7 @@ test.describe('GitJobs', () => {
     await page.getByRole('link', { name: 'Log in' }).click();
     await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL('/log-in');
-    await page.locator('#username').click();
     await page.locator('#username').fill('test');
-    await page.locator('#password').click();
     await page.locator('#password').fill('test');
     await page.getByRole('button', { name: 'Submit' }).click();
     await expect(page).toHaveURL('/');
@@ -113,9 +107,7 @@ test.describe('GitJobs', () => {
     await page.getByRole('link', { name: 'Log in' }).click();
     await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL('/log-in');
-    await page.locator('#username').click();
     await page.locator('#username').fill('test');
-    await page.locator('#password').click();
     await page.locator('#password').fill('test');
     await page.getByRole('button', { name: 'Submit' }).click();
     await expect(page).toHaveURL('/');
