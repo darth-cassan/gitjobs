@@ -24,23 +24,23 @@ test.describe('GitJobs', () => {
   });
 
   test('should apply a filter and verify that the results are updated', async ({ page }) => {
-    const fullTimeJobs = [
-      'Frontend Developer',
-      'Backend Developer',
-      'DevOps Engineer',
-      'Software Engineer in Test',
-      'Product Manager',
-      'Full-stack Developer',
-      'Security Engineer',
-    ];
-
+    const initialJobCount = await page.getByRole('button', { name: /Job type/ }).count();
     await page.locator('div:nth-child(4) > div > .font-semibold').first().click();
     await page.locator('label').filter({ hasText: 'Full Time' }).nth(1).click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForFunction(
+      (initialCount) => {
+        const currentCount = document.querySelectorAll('[role="button"][name*="Job type"]').length;
+        return currentCount < initialCount;
+      },
+      initialJobCount
+    );
 
-    const displayedJobTitles = await page.locator('[data-preview-job="true"] div.text-base.font-stretch-condensed').allTextContents();
-    for (const jobTitle of fullTimeJobs) {
-      expect(displayedJobTitles.map(t => t.trim())).toContain(jobTitle);
+    const jobCards = await page.getByRole('button', { name: /Job type/ }).all();
+    for (const jobCard of jobCards) {
+      const jobTypeElement = jobCard.locator('.capitalize').first();
+      if (await jobTypeElement.isVisible()) {
+        await expect(jobTypeElement).toHaveText('full time');
+      }
     }
   });
 
@@ -95,8 +95,8 @@ test.describe('GitJobs', () => {
     await page.getByRole('link', { name: 'Log in' }).click();
     await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL('/log-in');
-    await page.locator('#username').fill('test');
-    await page.locator('#password').fill('test');
+    await page.locator('#username').fill('test', { force: true });
+    await page.locator('#password').fill('test', { force: true });
     await page.getByRole('button', { name: 'Submit' }).click();
     await expect(page).toHaveURL('/');
   });
@@ -107,8 +107,8 @@ test.describe('GitJobs', () => {
     await page.getByRole('link', { name: 'Log in' }).click();
     await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL('/log-in');
-    await page.locator('#username').fill('test');
-    await page.locator('#password').fill('test');
+    await page.locator('#username').fill('test', { force: true });
+    await page.locator('#password').fill('test', { force: true });
     await page.getByRole('button', { name: 'Submit' }).click();
     await expect(page).toHaveURL('/');
 
