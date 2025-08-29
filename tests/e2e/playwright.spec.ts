@@ -24,41 +24,36 @@ test.describe('GitJobs', () => {
   });
 
   test('should apply a filter and verify that the results are updated', async ({ page }) => {
-    const jobCount = await page.getByRole('button', { name: /Job type/ }).count();
-    if (jobCount === 0) {
-      console.log('No jobs found, skipping test.');
-      return;
-    }
-    const initialJobCount = await page.getByRole('button', { name: /Job type/ }).count();
+    const fullTimeJobs = [
+      'Frontend Developer',
+      'Backend Developer',
+      'DevOps Engineer',
+      'Software Engineer in Test',
+      'Product Manager',
+      'Full-stack Developer',
+      'Security Engineer',
+    ];
+
     await page.locator('div:nth-child(4) > div > .font-semibold').first().click();
     await page.locator('label').filter({ hasText: 'Full Time' }).nth(1).click();
-    await page.waitForFunction(
-      (initialCount) => {
-        const currentCount = document.querySelectorAll('[role="button"][name*="Job type"]').length;
-        return currentCount < initialCount;
-      },
-      initialJobCount
-    );
+    await page.waitForLoadState('networkidle');
 
-    const jobCards = await page.getByRole('button', { name: /Job type/ }).all();
+    const jobCards = await page.locator('[data-preview-job="true"]').all();
+    const displayedJobTitles = [];
     for (const jobCard of jobCards) {
-      const jobTypeElement = jobCard.locator('.capitalize').first();
-      if (await jobTypeElement.isVisible()) {
-        await expect(jobTypeElement).toHaveText('full time');
-      }
+      const title = await jobCard.locator('div.text-base.font-stretch-condensed').textContent();
+      displayedJobTitles.push(title.trim());
     }
+
+    expect(displayedJobTitles.sort()).toEqual(fullTimeJobs.sort());
   });
 
   test('should reset filters', async ({ page }) => {
-    const jobCount = await page.getByRole('button', { name: /Job type/ }).count();
-    if (jobCount === 0) {
-      console.log('No jobs found, skipping test.');
-      return;
-    }
-    const initialFirstJob = await page.getByRole('button', { name: /Job type/ }).first().textContent();
+    await page.waitForSelector('[data-preview-job="true"]');
+    const initialFirstJob = await page.locator('[data-preview-job="true"]').first().textContent();
     await page.locator('label').filter({ hasText: 'Full Time' }).nth(1).click();
     await page.locator('#reset-desktop-filters').click();
-    const newFirstJob = await page.getByRole('button', { name: /Job type/ }).first().textContent();
+    const newFirstJob = await page.locator('[data-preview-job="true"]').first().textContent();
     expect(newFirstJob).toEqual(initialFirstJob);
   });
 
@@ -139,12 +134,8 @@ test.describe('GitJobs', () => {
 
 
   test('should display job details correctly', async ({ page }) => {
-    const jobCount = await page.getByRole('button', { name: /Job type/ }).count();
-    if (jobCount === 0) {
-      console.log('No jobs found, skipping test.');
-      return;
-    }
-    await page.getByRole('button', { name: /Job type/ }).first().click();
+    await page.waitForSelector('[data-preview-job="true"]');
+    await page.locator('[data-preview-job="true"]').first().click();
     await expect(page.locator('#preview-modal .text-xl')).toBeVisible({ timeout: 10000 });
     await expect(page.locator('#preview-content').getByText(/Job description/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Apply' })).toBeEnabled();
