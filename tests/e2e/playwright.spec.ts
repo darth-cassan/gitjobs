@@ -12,7 +12,7 @@ test.describe('GitJobs', () => {
     }
     // Handle cookie consent
     try {
-      await page.getByRole('button', { name: 'Accept all' }).click({ timeout: 5000 });
+      await page.locator('.cc-allow').click({ timeout: 5000 });
     } catch (error) {
       // Ignore if the cookie consent is not visible
     }
