@@ -101,6 +101,7 @@ test.describe('GitJobs', () => {
     await page.getByRole('link', { name: 'Log in' }).click();
     await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL('/log-in');
+    await page.waitForSelector('#username');
     await page.locator('#username').fill('test', { force: true });
     await page.locator('#password').fill('test', { force: true });
     await page.getByRole('button', { name: 'Submit' }).click();
@@ -113,6 +114,7 @@ test.describe('GitJobs', () => {
     await page.getByRole('link', { name: 'Log in' }).click();
     await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL('/log-in');
+    await page.waitForSelector('#username');
     await page.locator('#username').fill('test', { force: true });
     await page.locator('#password').fill('test', { force: true });
     await page.getByRole('button', { name: 'Submit' }).click();
