@@ -99,11 +99,10 @@ test.describe('GitJobs', () => {
   test('should log in a user', async ({ page }) => {
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
-    await page.waitForLoadState('networkidle');
-    await expect(page).toHaveURL('/log-in');
-    await page.waitForSelector('#username');
-    await page.locator('#username').fill('test', { force: true });
-    await page.locator('#password').fill('test', { force: true });
+    await page.locator('form div').filter({ hasText: 'Username' }).click();
+    await page.getByRole('textbox', { name: 'Username' }).fill('test');
+    await page.getByRole('textbox', { name: 'Password' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).fill('test');
     await page.getByRole('button', { name: 'Submit' }).click();
     await expect(page).toHaveURL('/');
   });
@@ -112,11 +111,10 @@ test.describe('GitJobs', () => {
     // Log in first
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
-    await page.waitForLoadState('networkidle');
-    await expect(page).toHaveURL('/log-in');
-    await page.waitForSelector('#username');
-    await page.locator('#username').fill('test', { force: true });
-    await page.locator('#password').fill('test', { force: true });
+    await page.locator('form div').filter({ hasText: 'Username' }).click();
+    await page.getByRole('textbox', { name: 'Username' }).fill('test');
+    await page.getByRole('textbox', { name: 'Password' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).fill('test');
     await page.getByRole('button', { name: 'Submit' }).click();
     await expect(page).toHaveURL('/');
 
