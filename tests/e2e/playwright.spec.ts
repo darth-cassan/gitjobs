@@ -12,9 +12,14 @@ test.describe('GitJobs', () => {
     }
     // Handle cookie consent
     try {
-      await page.locator('.cc-allow').click({ timeout: 5000 });
+      await page.evaluate(() => {
+        const banner = document.querySelector('.osano-cm-window');
+        if (banner) {
+          banner.remove();
+        }
+      });
     } catch (error) {
-      // Ignore if the cookie consent is not visible
+      // Ignore if the banner is not visible
     }
   });
 
