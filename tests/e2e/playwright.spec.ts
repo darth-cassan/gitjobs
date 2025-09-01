@@ -99,7 +99,11 @@ test.describe('GitJobs', () => {
   test('should log in a user', async ({ page }) => {
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
-    await page.waitForFunction(() => document.querySelector('#username'));
+    try {
+      await page.locator('.osano-cm-accept-all').click({ timeout: 5000 });
+    } catch (error) {
+      // Ignore if the cookie consent is not visible
+    }
     await page.locator('#username').fill('test');
     await page.locator('#password').fill('test');
     await page.getByRole('button', { name: 'Submit' }).click();
@@ -110,7 +114,11 @@ test.describe('GitJobs', () => {
     // Log in first
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
-    await page.waitForFunction(() => document.querySelector('#username'));
+    try {
+      await page.locator('.osano-cm-accept-all').click({ timeout: 5000 });
+    } catch (error) {
+      // Ignore if the cookie consent is not visible
+    }
     await page.locator('#username').fill('test');
     await page.locator('#password').fill('test');
     await page.getByRole('button', { name: 'Submit' }).click();
