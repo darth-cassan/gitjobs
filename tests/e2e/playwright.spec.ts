@@ -12,14 +12,9 @@ test.describe('GitJobs', () => {
     }
     // Handle cookie consent
     try {
-      await page.evaluate(() => {
-        const banner = document.querySelector('.osano-cm-window');
-        if (banner) {
-          banner.remove();
-        }
-      });
+      await page.locator('.osano-cm-accept-all').click({ timeout: 5000 });
     } catch (error) {
-      // Ignore if the banner is not visible
+      // Ignore if the cookie consent is not visible
     }
   });
 
@@ -104,11 +99,8 @@ test.describe('GitJobs', () => {
   test('should log in a user', async ({ page }) => {
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
-    console.log(await page.content());
-    await page.locator('form div').filter({ hasText: 'Username' }).click();
-    await page.getByRole('textbox', { name: 'Username' }).fill('test');
-    await page.getByRole('textbox', { name: 'Password' }).click();
-    await page.getByRole('textbox', { name: 'Password' }).fill('test');
+    await page.locator('#username').fill('test');
+    await page.locator('#password').fill('test');
     await page.getByRole('button', { name: 'Submit' }).click();
     await expect(page).toHaveURL('/');
   });
@@ -117,10 +109,8 @@ test.describe('GitJobs', () => {
     // Log in first
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
-    await page.locator('form div').filter({ hasText: 'Username' }).click();
-    await page.getByRole('textbox', { name: 'Username' }).fill('test');
-    await page.getByRole('textbox', { name: 'Password' }).click();
-    await page.getByRole('textbox', { name: 'Password' }).fill('test');
+    await page.locator('#username').fill('test');
+    await page.locator('#password').fill('test');
     await page.getByRole('button', { name: 'Submit' }).click();
     await expect(page).toHaveURL('/');
 
