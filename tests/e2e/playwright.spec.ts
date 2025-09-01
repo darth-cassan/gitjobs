@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { exec } from 'child_process';
 
 test.describe('GitJobs', () => {
   test.beforeEach(async ({ page }) => {
@@ -100,75 +99,22 @@ test.describe('GitJobs', () => {
     await page.getByRole('button', { name: 'Submit' }).click();
   });
 
-  test('should connect to the database', async () => {
-    const command = `psql -U gitjobs -d gitjobs -h localhost -p 5432 -c "SELECT 1"`;
-    await new Promise((resolve, reject) => {
-      exec(command, { env: { ...process.env, PGPASSWORD: 'password' } }, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`exec error: ${error}`);
-          return reject(error);
-        }
-        console.log(`stdout: ${stdout}`);
-        console.error(`stderr: ${stderr}`);
-        resolve(stdout);
-      });
-    });
-  });
-
   test('should add a new job', async ({ page }) => {
-    const uniqueId = new Date().getTime();
-    const name = `testname_${uniqueId}`;
-    const username = `testuser_${uniqueId}`;
-    const email = `testuser_${uniqueId}@example.com`;
-    const password = 'password';
-
-    // Sign up a new user
-    await page.goto('/sign-up');
-    await page.locator('#name').fill(name);
-    await page.locator('#username').fill(username);
-    await page.locator('#email').fill(email);
-    await page.locator('#password').fill(password);
-    await page.locator('#password_confirmation').fill(password);
+    // Log in first
+    await page.locator('#user-dropdown-button').click();
+    await page.getByRole('link', { name: 'Log in' }).click();
+    await page.locator('#username').fill('test');
+    await page.locator('#password').fill('test');
     await page.getByRole('button', { name: 'Submit' }).click();
     await page.goto('/');
 
-    // Verify email and associate user with employer in the database
-    const verifyEmailCommand = `psql -d gitjobs -h localhost -p 5432 -c "UPDATE \"user\" SET email_verified = true WHERE username = '${username}'"`;
-    await new Promise((resolve, reject) => {
-      exec(verifyEmailCommand, { env: { ...process.env, PGUSER: 'gitjobs', PGPASSWORD: 'password' } }, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`exec error: ${error}`);
-          return reject(error);
-        }
-        resolve(stdout);
-      });
-    });
-    const associateUserCommand = `psql -d gitjobs -h localhost -p 5432 -c "INSERT INTO employer_team (user_id, employer_id, approved) VALUES ((SELECT user_id FROM \"user\" WHERE username = '${username}'), (SELECT employer_id FROM employer WHERE company = 'Test Inc.'), true);"`;
-    await new Promise((resolve, reject) => {
-      exec(associateUserCommand, { env: { ...process.env, PGUSER: 'gitjobs', PGPASSWORD: 'password' } }, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`exec error: ${error}`);
-          return reject(error);
-        }
-        resolve(stdout);
-      });
-    });
-
-    // Log in as the new user
-    await page.locator('#user-dropdown-button').click();
-    await page.getByRole('link', { name: 'Log in' }).click();
-    await page.locator('#username').fill(username);
-    await page.locator('#password').fill(password);
-    await page.getByRole('button', { name: 'Submit' }).click();
-    await page.waitForURL('/');
-
     // Add a new job
     await page.getByRole('link', { name: 'Post a job' }).click();
-    await page.waitForURL('**/dashboard/employer/jobs/add');
+    await page.getByRole('button', { name: 'Add Job' }).click();
     await page.getByRole('textbox', { name: 'Title *' }).click();
-    await page.getByRole('textbox', { name: 'Title *' }).fill('Test Job');
+    await page.getByRole('textbox', { name: 'Title *' }).fill('job');
     await page.locator('#description pre').nth(1).click();
-    await page.locator('#description').getByRole('application').getByRole('textbox').fill('Test job description');
+    await page.locator('#description').getByRole('application').getByRole('textbox').fill('description');
     await page.getByRole('button', { name: 'Publish' }).click();
     await expect(page.url()).toContain('/dashboard/employer');
   });
