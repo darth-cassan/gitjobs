@@ -89,6 +89,7 @@ jobs:
         run: |
           touch tern.conf
           bash ./migrate.sh
+          sleep 5
 
       - name: Insert test data
         env:
@@ -98,9 +99,7 @@ jobs:
           PGPASSWORD: password
           PGDATABASE: gitjobs
         run: |
-          psql -c "INSERT INTO \"user\" (user_id, auth_hash, created_at, email, email_verified, name, username, password, moderator) VALUES ('493e23f5-e794-4ce9-bd45-75f6d8d363ab', E'\\x42eec0a8a4ba266101cc3de9377d2b206d8bd8e4f16e40b11f3bc7c9dba169be', '2025-08-25 08:43:11.605766+02', 'test@t.com', true, 'test', 'test', '\\$argon2id\\$v=19\\$m=19456,t=2,p=1\\$vUCLsb/lDAepJiWB7VSFNw\\$yAYeJVIKW0gK3cOJAnpiV9H5uPZDATJh13fDWGivjZM', true);"
           psql -c "INSERT INTO employer (employer_id, company, created_at, description, public) VALUES ('18fff2d7-c794-4130-85e4-76b9d7c60b72', 'Test Inc.', '2025-08-25 09:20:05.88454+02', 'test', false);"
-          psql -c "INSERT INTO employer_team (employer_id, user_id, approved) VALUES ('18fff2d7-c794-4130-85e4-76b9d7c60b72', '493e23f5-e794-4ce9-bd45-75f6d8d363ab', true);"
           psql <<'EOF'
           INSERT INTO job (employer_id, title, description, kind, seniority, workplace, status, salary, salary_currency, salary_period, skills, published_at) VALUES
           ('18fff2d7-c794-4130-85e4-76b9d7c60b72', 'Frontend Developer', 'React expert', 'full-time', 'senior', 'remote', 'published', 120000, 'USD', 'year', '{"React", "TypeScript", "JavaScript"}', CURRENT_TIMESTAMP),
