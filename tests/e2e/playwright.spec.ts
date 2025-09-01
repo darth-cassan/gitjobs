@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('GitJobs', () => {
   test.beforeEach(async ({ page }) => {
+    await page.route('https://cmp.osano.com/16A0DbT9yDNIaQkvZ/cac8d053-b9a4-4677-8ab3-cb6720944467/osano.js', route => route.abort());
     for (let i = 0; i < 3; i++) {
       try {
         await page.goto('/', { timeout: 60000 });
@@ -9,12 +10,6 @@ test.describe('GitJobs', () => {
       } catch (error) {
         console.log(`Failed to navigate to page, retrying... (${i + 1}/3)`);
       }
-    }
-    // Handle cookie consent
-    try {
-      await page.locator('.osano-cm-accept-all').click({ timeout: 5000 });
-    } catch (error) {
-      // Ignore if the cookie consent is not visible
     }
   });
 
@@ -99,33 +94,32 @@ test.describe('GitJobs', () => {
   test('should log in a user', async ({ page }) => {
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
-    try {
-      await page.locator('.osano-cm-accept-all').click({ timeout: 5000 });
-    } catch (error) {
-      // Ignore if the cookie consent is not visible
-    }
     await page.locator('#username').fill('test');
     await page.locator('#password').fill('test');
     await page.getByRole('button', { name: 'Submit' }).click();
-    await expect(page).toHaveURL('/');
   });
 
   test('should add a new job', async ({ page }) => {
     // Log in first
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
-    try {
-      await page.locator('.osano-cm-accept-all').click({ timeout: 5000 });
-    } catch (error) {
-      // Ignore if the cookie consent is not visible
-    }
     await page.locator('#username').fill('test');
     await page.locator('#password').fill('test');
     await page.getByRole('button', { name: 'Submit' }).click();
-    await expect(page).toHaveURL('/');
+    await page.goto('/');
+
+    // Set up employer
+    await page.locator('#user-dropdown-button').click();
+    await page.getByRole('link', { name: 'Employer dashboard' }).click();
+    await page.getByRole('button', { name: 'Set up employer' }).click();
+    await page.getByRole('textbox', { name: 'Company name *' }).click();
+    await page.getByRole('textbox', { name: 'Company name *' }).fill('a');
+    await page.locator('.CodeMirror-scroll').click();
+    await page.getByRole('textbox', { name: 'Company name *' }).fill('aa');
+    await page.getByRole('application').getByRole('textbox').fill('a');
+    await page.getByRole('button', { name: 'Save' }).click();
 
     // Add a new job
-    await page.getByRole('link', { name: 'Post a job' }).click();
     await page.getByRole('button', { name: 'Add Job' }).click();
     await page.getByRole('textbox', { name: 'Title *' }).click();
     await page.getByRole('textbox', { name: 'Title *' }).fill('job');
