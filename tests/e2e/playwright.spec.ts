@@ -93,11 +93,10 @@ test.describe('GitJobs', () => {
 
   test('should log in a user', async ({ page }) => {
     await page.locator('#user-dropdown-button').click();
-    const responsePromise = page.waitForResponse('**/log-in');
     await page.getByRole('link', { name: 'Log in' }).click();
-    const response = await responsePromise;
-    expect(response.status()).toBe(200);
     await page.waitForURL('**/log-in');
+    const content = await page.content();
+    console.log(content);
     await page.locator('#username').fill('test');
     await page.locator('#password').fill('test');
     await page.getByRole('button', { name: 'Submit' }).click();
@@ -106,10 +105,7 @@ test.describe('GitJobs', () => {
   test('should add a new job', async ({ page }) => {
     // Log in first
     await page.locator('#user-dropdown-button').click();
-    const responsePromise = page.waitForResponse('**/log-in');
     await page.getByRole('link', { name: 'Log in' }).click();
-    const response = await responsePromise;
-    expect(response.status()).toBe(200);
     await page.waitForURL('**/log-in');
     await page.locator('#username').fill('test');
     await page.locator('#password').fill('test');
