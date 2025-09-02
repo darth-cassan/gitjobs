@@ -11,10 +11,6 @@ test.describe('GitJobs', () => {
         console.log(`Failed to navigate to page, retrying... (${i + 1}/3)`);
       }
     }
-    const acceptButton = page.getByRole('button', { name: 'Accept all' });
-    if (await acceptButton.isVisible()) {
-      await acceptButton.click();
-    }
   });
 
   test('should have the correct title and heading', async ({ page }) => {
@@ -98,6 +94,7 @@ test.describe('GitJobs', () => {
   test('should log in a user', async ({ page }) => {
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
+    await page.route('https://cmp.osano.com/**', route => route.abort());
     await page.waitForURL('**/log-in');
     await page.locator('#username').fill('test');
     await page.locator('#password').fill('test');
@@ -108,6 +105,7 @@ test.describe('GitJobs', () => {
     // Log in first
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
+    await page.route('https://cmp.osano.com/**', route => route.abort());
     await page.waitForURL('**/log-in');
     await page.locator('#username').fill('test');
     await page.locator('#password').fill('test');
