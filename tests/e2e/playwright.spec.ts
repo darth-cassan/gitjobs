@@ -93,9 +93,11 @@ test.describe('GitJobs', () => {
 
   test('should log in a user', async ({ page }) => {
     await page.locator('#user-dropdown-button').click();
+    await page.route('https://cmp.osano.com/16A0DbT9yDNIaQkvZ/cac8d053-b9a4-4677-8ab3-cb6720944467/osano.js', route => route.abort());
     await page.getByRole('link', { name: 'Log in' }).click();
-    await page.route('https://cmp.osano.com/**', route => route.abort());
+    await page.route('https://cmp.osano.com/16A0DbT9yDNIaQkvZ/cac8d053-b9a4-4677-8ab3-cb6720944467/osano.js', route => route.abort());
     await page.waitForURL('**/log-in');
+    await page.route('https://cmp.osano.com/16A0DbT9yDNIaQkvZ/cac8d053-b9a4-4677-8ab3-cb6720944467/osano.js', route => route.abort());
     await page.locator('#username').fill('test');
     await page.locator('#password').fill('test');
     await page.getByRole('button', { name: 'Submit' }).click();
