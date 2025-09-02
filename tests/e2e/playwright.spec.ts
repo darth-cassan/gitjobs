@@ -95,7 +95,6 @@ test.describe('GitJobs', () => {
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
     await page.waitForURL('**/log-in');
-    await page.waitForSelector('#username');
     await page.locator('#username').fill('test');
     await page.locator('#password').fill('test');
     await page.getByRole('button', { name: 'Submit' }).click();
@@ -106,7 +105,6 @@ test.describe('GitJobs', () => {
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
     await page.waitForURL('**/log-in');
-    await page.waitForSelector('#username');
     await page.locator('#username').fill('test');
     await page.locator('#password').fill('test');
     await page.getByRole('button', { name: 'Submit' }).click();

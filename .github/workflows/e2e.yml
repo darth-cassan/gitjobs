@@ -137,7 +137,7 @@ jobs:
             base_url: "http://127.0.0.1:8080"
             login:
               email: true
-              github: true
+              github: false
               linuxfoundation: false
             oauth2:
               github:
