@@ -111,17 +111,14 @@ test.describe('GitJobs', () => {
 
     // Add a new job
     await page.getByRole('link', { name: 'Post a job' }).click();
-    const addJobButton = page.getByRole('button', { name: 'Add Job' });
-    if (!await addJobButton.isVisible()) {
-      console.log(await page.content());
-    }
-    await addJobButton.click();
+    await page.waitForURL('**/dashboard/employer');
+    await page.getByRole('button', { name: 'Add Job' }).click();
     await page.getByRole('textbox', { name: 'Title *' }).click();
     await page.getByRole('textbox', { name: 'Title *' }).fill('job');
     await page.locator('#description pre').nth(1).click();
     await page.locator('#description').getByRole('application').getByRole('textbox').fill('description');
     await page.getByRole('button', { name: 'Publish' }).click();
-    await expect(page.url()).toContain('/dashboard/employer');
+    expect(page.url()).toContain('/dashboard/employer');
   });
 
   test('should display job details correctly', async ({ page }) => {
