@@ -111,7 +111,11 @@ test.describe('GitJobs', () => {
 
     // Add a new job
     await page.getByRole('link', { name: 'Post a job' }).click();
-    await page.getByRole('button', { name: 'Add Job' }).click();
+    const addJobButton = page.getByRole('button', { name: 'Add Job' });
+    if (!await addJobButton.isVisible()) {
+      console.log(await page.content());
+    }
+    await addJobButton.click();
     await page.getByRole('textbox', { name: 'Title *' }).click();
     await page.getByRole('textbox', { name: 'Title *' }).fill('job');
     await page.locator('#description pre').nth(1).click();

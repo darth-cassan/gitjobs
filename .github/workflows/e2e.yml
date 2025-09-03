@@ -156,6 +156,6 @@ jobs:
           wait-on: http://localhost:8080
 
       - name: Run Playwright tests
-        run: npx playwright test --config tests/e2e/playwright.config.ts --trace on
+        run: npx playwright test --config tests/e2e/playwright.config.ts
         env:
           BASE_URL: http://127.0.0.1:8080
