@@ -111,6 +111,7 @@ test.describe('GitJobs', () => {
 
     // Add a new job
     await page.getByRole('link', { name: 'Post a job' }).click();
+    console.log(`Current URL: ${page.url()}`);
     await page.waitForURL('**/dashboard/employer');
     await page.getByRole('button', { name: 'Add Job' }).click();
     await page.getByRole('textbox', { name: 'Title *' }).click();
