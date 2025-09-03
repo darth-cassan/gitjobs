@@ -89,6 +89,7 @@ jobs:
         run: |
           touch tern.conf
           bash ./migrate.sh
+          sleep 5
 
       - name: Insert test data
         env:

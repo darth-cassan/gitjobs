@@ -4,7 +4,7 @@ test.describe('GitJobs', () => {
   test.beforeEach(async ({ page }) => {
     for (let i = 0; i < 3; i++) {
       try {
-        await page.goto('http://127.0.0.1:8080/', { timeout: 60000 });
+        await page.goto('http://127.0.0.1:8080', { timeout: 60000 });
         break;
       } catch (error) {
         console.log(`Failed to navigate to page, retrying... (${i + 1}/3)`);
