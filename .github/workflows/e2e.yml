@@ -154,7 +154,7 @@ jobs:
       - name: Start server and wait for it to be ready
         uses: JarvusInnovations/background-action@v1
         with:
-          run: ./target/debug/gitjobs-server --config-file config.testing.yml
+          run: ./target/debug/gitjobs-server --config-file config.testing.yml &
           wait-on: http://localhost:8080
           tail: true
           log-output: "stdout,stderr"
