@@ -18,20 +18,13 @@ test.describe('GitJobs', () => {
   });
 
   test('should apply a filter and verify that the results are updated', async ({ page }) => {
-    const jobCount = await page.getByRole('button', { name: /Job type/ }).count();
-    if (jobCount === 0) {
-      console.log('No jobs found, skipping test.');
-      return;
-    }
-    const initialJobCount = await page.getByRole('button', { name: /Job type/ }).count();
     await page.locator('div:nth-child(4) > div > .font-semibold').first().click();
     await page.locator('label').filter({ hasText: 'Full Time' }).nth(1).click();
     await page.waitForFunction(
-      (initialCount) => {
-        const currentCount = document.querySelectorAll('[role="button"][name*="Job type"]').length;
-        return currentCount < initialCount;
-      },
-      initialJobCount
+      () => {
+        const currentCount = document.querySelectorAll('[data-preview-job="true"]').length;
+        return currentCount === 12;
+      }
     );
 
     const jobCards = await page.getByRole('button', { name: /Job type/ }).all();
@@ -42,20 +35,35 @@ test.describe('GitJobs', () => {
       }
     }
   });
-
   test('should reset filters', async ({ page }) => {
-    await page.waitForSelector('[data-preview-job="true"]');
-    const initialFirstJob = await page.locator('[data-preview-job="true"]').first().textContent();
-    await page.locator('div:nth-child(4) > div > .font-semibold').first().click();
-    await page.locator('label').filter({ hasText: 'Full Time' }).nth(1).click();
+    await page.locator('label').filter({ hasText: 'Part Time' }).nth(1).click();
+
+    await page.waitForFunction(
+      () => {
+        const currentCount = document.querySelectorAll('[data-preview-job="true"]').length;
+        return currentCount === 3;
+      }
+    );
+    const firstJobAfterFilter = await page.locator('.text-base.font-stretch-condensed.font-medium.text-stone-900.line-clamp-2.md\\:line-clamp-1').first().textContent();
+    expect(firstJobAfterFilter!.trim()).toBe('Data Scientist');
     await page.locator('#reset-desktop-filters').click();
-    const newFirstJob = await page.locator('[data-preview-job="true"]').first().textContent();
-    expect(newFirstJob).toEqual(initialFirstJob);
+    await expect(page.locator('#results')).toHaveText('1 - 20 of 21 results');
+    const firstJobAfterReset = await page.locator('.text-base.font-stretch-condensed.font-medium.text-stone-900.line-clamp-2.md\\:line-clamp-1').first().textContent();
+    expect(firstJobAfterReset!.trim()).toBe('Frontend Developer');
   });
 
   test('should sort jobs', async ({ page }) => {
-    await page.locator('#sort-desktop').selectOption('open-source');
-    await expect(page).toHaveURL(/\?sort=open-source/);
+    const initialJobTitles = (await page.locator('.text-base.font-stretch-condensed.font-medium.text-stone-900.line-clamp-2.md\\:line-clamp-1').allTextContents()).map(title => title.trim());
+    await page.locator('#sort-desktop').selectOption('salary');
+    await expect(page).toHaveURL(/\?sort=salary/);
+    await page.waitForTimeout(500);
+    const sortedJobTitles = (await page.locator('.text-base.font-stretch-condensed.font-medium.text-stone-900.line-clamp-2.md\\:line-clamp-1').allTextContents()).map(title => title.trim());
+    expect(sortedJobTitles[0]).toBe('Security Engineer');
+    expect(sortedJobTitles[1]).toBe('DevOps Engineer');
+    expect(sortedJobTitles[2]).toBe('Product Manager');
+    expect(sortedJobTitles[3]).toBe('Backend Developer');
+    expect(sortedJobTitles[4]).toBe('Frontend Developer');
+    expect(sortedJobTitles).not.toEqual(initialJobTitles);
   });
 
   test('should navigate to the stats page and interact with charts', async ({ page, browserName }) => {
@@ -100,7 +108,6 @@ test.describe('GitJobs', () => {
   });
 
   test('should add a new job', async ({ page }) => {
-    // Log in first
     await page.locator('#user-dropdown-button').click();
     await page.getByRole('link', { name: 'Log in' }).click();
     await page.waitForURL('**/log-in');
@@ -109,7 +116,6 @@ test.describe('GitJobs', () => {
     await page.getByRole('button', { name: 'Submit' }).click();
     await page.goto('/');
 
-    // Add a new job
     await page.getByRole('link', { name: 'Post a job' }).click();
     await page.waitForURL('**/dashboard/employer');
     await page.getByRole('button', { name: 'Add Job' }).click();
@@ -122,27 +128,40 @@ test.describe('GitJobs', () => {
   });
 
   test('should display job details correctly', async ({ page }) => {
+    const expectedTitle = 'Frontend Developer';
+    const expectedDescription = 'React expert';
+    const expectedKind = 'full time';
+    const expectedSeniority = 'senior';
+    const expectedWorkplace = 'remote';
+    const expectedSalaryAmount = '120K';
+    const expectedSalaryCurrency = 'USD';
+    const expectedSalaryPeriod = '/ year';
+
     await page.waitForSelector('[data-preview-job="true"]');
     await page.locator('[data-preview-job="true"]').first().click();
     await expect(page.locator('#preview-modal .text-xl')).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('#preview-content').getByText(/Job description/)).toBeVisible();
+
+    await expect(page.locator('.text-xl.lg\\:leading-tight.font-stretch-condensed.font-medium.text-stone-900.lg\\:truncate.my-1\\.5.md\\:my-0')).toHaveText(expectedTitle);
+    await expect(page.locator('div.text-lg.font-semibold.text-stone-800:has-text("Job description") + div.text-sm\\/6.text-stone-600.markdown p')).toHaveText(expectedDescription);
+    await expect(page.locator('div:has-text("Job type") + div.flex.items-center.text-xs > div.truncate.capitalize')).toHaveText(expectedKind);
+    await expect(page.locator('div:has-text("Workplace") + div.flex.items-center.text-xs > div.truncate.capitalize')).toHaveText(expectedWorkplace);
+    await expect(page.locator('div:has-text("Seniority level") + div.flex.items-center.text-xs > div.truncate.capitalize')).toHaveText(expectedSeniority);
+    await expect(page.locator('#preview-content div:has-text("Salary") div.flex.items-baseline.font-medium.text-stone-900.text-sm > div.text-xs.text-stone-500.me-1')).toHaveText(expectedSalaryCurrency);
+    await expect(page.locator('#preview-content div:has-text("Salary") div.flex.items-baseline.font-medium.text-stone-900.text-sm')).toContainText(expectedSalaryAmount);
+    await expect(page.locator('#preview-content div:has-text("Salary") div.flex.items-baseline > div.text-stone-900.text-xs.ms-1')).toHaveText(expectedSalaryPeriod);
     await expect(page.getByRole('button', { name: 'Apply' })).toBeEnabled();
     await expect(page.locator('#preview-content').getByText(/Published/)).toBeVisible();
-    await expect(page.locator('#preview-content').getByText(/Job type/)).toBeVisible();
-    await expect(page.locator('#preview-content').getByText(/Workplace/)).toBeVisible();
-    await expect(page.locator('#preview-content').getByText(/Seniority level/)).toBeVisible();
     await expect(page.getByText('Share this job')).toBeVisible();
   });
 
   test('should allow paginating through jobs', async ({ page }) => {
-    const paginationVisible = await page.locator('[aria-label="pagination"]').isVisible();
-    if (!paginationVisible) {
-      console.log('Pagination not visible, skipping test.');
+    const nextButton = page.getByRole('link', { name: 'Next' });
+    if (!(await nextButton.isVisible())) {
+      console.log('Pagination next button not visible, skipping test.');
       return;
     }
-    const initialPageNumber = await page.locator('[aria-current="page"]').textContent();
-    await page.getByLabel(/Go to page/).last().click();
-    const newPageNumber = await page.locator('[aria-current="page"]').textContent();
-    expect(newPageNumber).not.toBe(initialPageNumber);
+    await nextButton.click();
+    await expect(page).toHaveURL(/offset=20/);
+    await expect(page.locator('#results')).toHaveText('21 - 21 of 21 results');
   });
 });

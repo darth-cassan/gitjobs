@@ -6,6 +6,12 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: gitjobs
+      PGPASSWORD: password
+      PGDATABASE: gitjobs
 
     services:
       postgres:
@@ -24,7 +30,9 @@ jobs:
       - name: Set up Rust environment
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
+          toolchain: 1.87.0
+          components: clippy, rustfmt
+
 
       - name: Cache Cargo dependencies
         uses: actions/cache@v3
@@ -63,56 +71,26 @@ jobs:
           sudo mv tern /usr/local/bin/
 
       - name: Build server
-        run: cargo build --verbose --bin gitjobs-server
+        run: cargo build --bin gitjobs-server
 
-      - name: Prepare Database by Dropping Extensions
-        env:
-          PGHOST: localhost
-          PGPORT: 5432
-          PGUSER: gitjobs
-          PGPASSWORD: password
-          PGDATABASE: gitjobs
-        run: |
-          sudo apt-get update && sudo apt-get install -y postgresql-client
-          psql -c "DROP EXTENSION IF EXISTS postgis CASCADE;"
-          psql -c "DROP EXTENSION IF EXISTS pgcrypto CASCADE;"
-          psql -c "DROP EXTENSION IF EXISTS pg_trgm CASCADE;"
+
       - name: Run database migrations
         working-directory: database/migrations
         env:
-          PGHOST: localhost
-          PGPORT: 5432
-          PGUSER: gitjobs
-          PGPASSWORD: password
-          PGDATABASE: gitjobs
           TERN_CONF: ${{ github.workspace }}/database/migrations/tern.conf
         run: |
           touch tern.conf
           bash ./migrate.sh
 
       - name: Insert test data
-        env:
-          PGHOST: localhost
-          PGPORT: 5432
-          PGUSER: gitjobs
-          PGPASSWORD: password
-          PGDATABASE: gitjobs
         run: |
-          psql -f database/migrations/insert_test_data.sql
+          psql -f database/tests/data/e2e.sql
 
       - name: Create Server Config File
         run: |
           cat <<EOF > config.testing.yml
           db:
             url: postgres://gitjobs:password@127.0.0.1:5432/gitjobs
-          email:
-            from_address: "test@example.com"
-            from_name: "Test"
-            smtp:
-              host: "127.0.0.1"
-              port: 2525
-              username: "test"
-              password: "password"
           log:
             format: "pretty"
           server:
@@ -124,14 +102,7 @@ jobs:
               email: true
               github: false
               linuxfoundation: false
-            oauth2:
-              github:
-                auth_url: "https://github.com/login/oauth/authorize"
-                client_id: "dummy_client_id"
-                client_secret: "dummy_client_secret"
-                redirect_uri: "http://127.0.0.1:8080/auth/github/callback"
-                scopes: ["read:user", "user:email"]
-                token_url: "https://github.com/login/oauth/access_token"
+            oauth2: {}
             oidc: {}
           EOF
 
