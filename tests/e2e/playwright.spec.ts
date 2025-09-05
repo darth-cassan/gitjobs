@@ -10,12 +10,6 @@ test.describe('GitJobs', () => {
         console.log(`Failed to navigate to page, retrying... (${i + 1}/3)`);
       }
     }
-    // Handle cookie consent
-    try {
-      await page.getByRole('button', { name: 'Accept all' }).click({ timeout: 5000 });
-    } catch (error) {
-      // Ignore if the cookie consent is not visible
-    }
   });
 
   test('should have the correct title and heading', async ({ page }) => {
@@ -50,15 +44,12 @@ test.describe('GitJobs', () => {
   });
 
   test('should reset filters', async ({ page }) => {
-    const jobCount = await page.getByRole('button', { name: /Job type/ }).count();
-    if (jobCount === 0) {
-      console.log('No jobs found, skipping test.');
-      return;
-    }
-    const initialFirstJob = await page.getByRole('button', { name: /Job type/ }).first().textContent();
+    await page.waitForSelector('[data-preview-job="true"]');
+    const initialFirstJob = await page.locator('[data-preview-job="true"]').first().textContent();
+    await page.locator('div:nth-child(4) > div > .font-semibold').first().click();
     await page.locator('label').filter({ hasText: 'Full Time' }).nth(1).click();
     await page.locator('#reset-desktop-filters').click();
-    const newFirstJob = await page.getByRole('button', { name: /Job type/ }).first().textContent();
+    const newFirstJob = await page.locator('[data-preview-job="true"]').first().textContent();
     expect(newFirstJob).toEqual(initialFirstJob);
   });
 
@@ -99,15 +90,40 @@ test.describe('GitJobs', () => {
     await expect(page).toHaveURL(/\/sign-up/);
   });
 
+  test('should log in a user', async ({ page }) => {
+    await page.locator('#user-dropdown-button').click();
+    await page.getByRole('link', { name: 'Log in' }).click();
+    await page.waitForURL('**/log-in');
+    await page.locator('#username').fill('test');
+    await page.locator('#password').fill('test');
+    await page.getByRole('button', { name: 'Submit' }).click();
+  });
 
+  test('should add a new job', async ({ page }) => {
+    // Log in first
+    await page.locator('#user-dropdown-button').click();
+    await page.getByRole('link', { name: 'Log in' }).click();
+    await page.waitForURL('**/log-in');
+    await page.locator('#username').fill('test');
+    await page.locator('#password').fill('test');
+    await page.getByRole('button', { name: 'Submit' }).click();
+    await page.goto('/');
+
+    // Add a new job
+    await page.getByRole('link', { name: 'Post a job' }).click();
+    await page.waitForURL('**/dashboard/employer');
+    await page.getByRole('button', { name: 'Add Job' }).click();
+    await page.getByRole('textbox', { name: 'Title *' }).click();
+    await page.getByRole('textbox', { name: 'Title *' }).fill('job');
+    await page.locator('#description pre').nth(1).click();
+    await page.locator('#description').getByRole('application').getByRole('textbox').fill('description');
+    await page.getByRole('button', { name: 'Publish' }).click();
+    expect(page.url()).toContain('/dashboard/employer');
+  });
 
   test('should display job details correctly', async ({ page }) => {
-    const jobCount = await page.getByRole('button', { name: /Job type/ }).count();
-    if (jobCount === 0) {
-      console.log('No jobs found, skipping test.');
-      return;
-    }
-    await page.getByRole('button', { name: /Job type/ }).first().click();
+    await page.waitForSelector('[data-preview-job="true"]');
+    await page.locator('[data-preview-job="true"]').first().click();
     await expect(page.locator('#preview-modal .text-xl')).toBeVisible({ timeout: 10000 });
     await expect(page.locator('#preview-content').getByText(/Job description/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Apply' })).toBeEnabled();
