@@ -91,7 +91,14 @@ jobs:
           cat <<EOF > config.testing.yml
           db:
             url: postgres://gitjobs:password@127.0.0.1:5432/gitjobs
-          email: {}
+          email:
+            from_address: "test@example.com"
+            from_name: "Test"
+            smtp:
+              host: "127.0.0.1"
+              port: 2525
+              username: "test"
+              password: "password"
           log:
             format: "pretty"
           server:
