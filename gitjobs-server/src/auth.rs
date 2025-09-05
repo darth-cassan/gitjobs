@@ -216,6 +216,7 @@ impl AuthnBackend {
             };
 
             // Verify the password
+            println!("Password: {}, Password hash: {}", &creds.password, &password_hash);
             if tokio::task::spawn_blocking(move || verify_password(creds.password, &password_hash))
                 .await?
                 .is_ok()
